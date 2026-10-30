@@ -8,7 +8,11 @@
 - Download and Fork are both colored buttons of equal size, with readable text in both themes.
 - Removed usage tips and the captions under screenshots; screenshots scroll sideways.
 - New Updates section on each app page with what's new per version (Galaxy Gridiron v0.0.11 and v0.0.10, Swipe Clean v0.0.6 and v0.0.5, Kanban Board v0.02). Galaxy Gridiron now lists v0.0.11.
-- Room for a "Built with" detail (hidden until filled in).
+- "Built with" detail: Grok Bot from Cursor for Swipe Clean, Kanban Board and Cat Health Dashboard (Galaxy Gridiron pending, hidden).
+- Updates filled from the projects' release notes: Swipe Clean v0.0.6 and v0.0.5, Kanban Board v0.02 and v0.01, Cat Health Dashboard v0.0.2 and v0.0.1.
+- Cat Health Dashboard is now listed as v0.0.2, with the tagged source download.
+- New Swipe Clean screenshots of the Android app (placeholder images only).
+- Cat Health Dashboard screenshots retaken for a single owner (no "logged by" names).
 
 ## v0.0.3
 - App pages: Download comes first, and Download and Fork now look the same (Fork is no longer highlighted). The Download label says plainly that you get the source code as a .zip, and a short hint under the buttons explains what Download and Fork give you.
