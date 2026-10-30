@@ -1,5 +1,5 @@
 {
-  "$schemaNote": "One entry per app. Required: id, name, repo, summary, description, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, caption, width, height}; 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here.",
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, caption, width, height}; 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two.",
   "apps": [
     {
       "id": "galaxy-gridiron",
@@ -7,17 +7,21 @@
       "repo": "galaxy-gridiron",
       "category": "SportsApplication",
       "summary": "A read-only fantasy football companion for Sleeper leagues.",
-      "description": [
-        "Galaxy Gridiron is a read-only companion for Sleeper fantasy football leagues. It never changes anything in your leagues and needs no password: you type your own Sleeper username and it shows your teams across six tabs (Team, Matchup, League, Waivers, Trades and Picks). Tap any player for his card, news and live stats; the chat button answers questions about your team.",
-        "New in v0.0.10: backup quarterbacks are counted correctly in drop, pickup and trade tips; the player card shows a \"Live now\" box with points, projection and a stat breakdown during his game; picks are banana yellow so they no longer look like a win; and the Picks leaderboard grid, now called \"Picks by week\", shows the newest week first. The duplicate weekly chart and the video buttons were removed.",
-        "It is an Expo / React Native (TypeScript) Android app, with an iPhone web-app (PWA) export that you add to your Home Screen from Safari. An optional Cloudflare Worker powers the AI chat, so the app itself never holds an AI key."
+      "about": [
+        "Galaxy Gridiron shows your Sleeper fantasy football leagues at a glance. Type your Sleeper username and it shows your teams across six tabs: Team, Matchup, League, Waivers, Trades and Picks. Tap any player to see his card, news and live stats during his game, or ask the chat button a question about your team.",
+        "It only looks, never touches: it can't change anything in your leagues and never asks for a password.",
+        "New in v0.0.10: tips for dropping, picking up and trading players now count backup quarterbacks correctly; a player's card shows his live points and projection while his game is on; your picks are banana yellow so they no longer look like a win; and the picks leaderboard, now called \"Picks by week\", shows the newest week first. A repeated weekly chart and the video buttons were removed."
+      ],
+      "technical": [
+        "Android app built with Expo / React Native (TypeScript). The iPhone version is a web app (PWA) export that you add to your Home Screen from Safari.",
+        "League data comes from Sleeper's public, read-only API. An optional Cloudflare Worker powers the AI chat, so the app itself never holds an AI key."
       ],
       "platforms": [
         "android",
         "web"
       ],
       "platformNotes": {
-        "web": "iPhone web app (PWA), added to the Home Screen from Safari."
+        "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
       "version": "0.0.10",
       "versionSource": "git tag v0.0.10; app/src/version.ts and app.json (expo.version)",
@@ -52,7 +56,7 @@
       "links": {
         "download": {
           "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.10.zip",
-          "label": "Download source (v0.0.10, .zip)"
+          "label": "Download (v0.0.10, source code .zip)"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -70,17 +74,21 @@
       "repo": "swipe-clean",
       "category": "UtilitiesApplication",
       "summary": "Swipe through your photos to decide what to keep and what to delete.",
-      "description": [
-        "Swipe Clean helps you tidy a photo library one swipe at a time: swipe left to add a photo to your Delete pile, right to keep it, with undo, combos and a daily streak. The app never deletes anything by itself and never pre-selects photos; you remove them yourself through Android's own delete dialog (or in Google Photos on the web).",
-        "New in v0.0.6: Lil, the mascot, sits centred in a rounded header on every page; the swipe screen header shows Photos done and Minutes today; Settings has an Appearance choice of Dark (default), Light or Match my phone; and rapid taps on Lil no longer get stuck. v0.0.5 added a new app icon and Lil's happy reactions and idle poses, with Show Lil and Calm mode switches that respect your phone's Remove animations setting.",
-        "The Android app is built with Expo / React Native and a small Kotlin module that talks to MediaStore. The Web version is a browser demo for Google Photos using the Picker API with a read-only scope; it runs in demo mode with generated placeholder photos until you add your own Google OAuth client ID."
+      "about": [
+        "Swipe Clean helps you tidy your photo library one swipe at a time: swipe left to put a photo in your Delete pile, right to keep it. Undo, combos and a daily streak keep it quick and fun.",
+        "It never deletes anything by itself and never picks photos for you. You look over your Delete pile, then remove those photos yourself with your phone's own delete prompt (or in Google Photos on the web). On the web you can try a demo with sample photos.",
+        "New in v0.0.6: Lil, the little mascot, now sits in a rounded header on every page; the swipe screen shows how many photos you've done and your minutes today; Settings lets you pick Dark, Light or Match my phone; and rapid taps on Lil no longer get stuck. v0.0.5 brought a new app icon and Lil's happy reactions, with switches to hide Lil or calm things down, and it follows your phone's setting for fewer animations."
+      ],
+      "technical": [
+        "Android app built with Expo / React Native, with a small Kotlin module that talks to MediaStore and uses the system trash and delete dialogs.",
+        "The Web version is a browser demo for Google Photos using the Picker API with a read-only scope. It runs in demo mode with generated placeholder photos until you add your own Google OAuth client ID."
       ],
       "platforms": [
         "android",
         "web"
       ],
       "platformNotes": {
-        "web": "Browser demo (Google Photos Picker, read-only); demo mode without your own OAuth client ID."
+        "web": "A browser demo with sample photos; connecting Google Photos needs extra setup."
       },
       "version": "0.0.6",
       "versionSource": "git tag v0.0.6; android/app/src/version.ts and app.json (expo.version)",
@@ -122,7 +130,7 @@
       "links": {
         "download": {
           "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip",
-          "label": "Download source (v0.0.6, .zip)"
+          "label": "Download (v0.0.6, source code .zip)"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -139,17 +147,21 @@
       "name": "Kanban Board",
       "repo": "kanban-board",
       "category": "BusinessApplication",
-      "summary": "A shared, offline-tolerant Kanban board for two people, with a TV mode.",
-      "description": [
-        "Kanban Board is a shared board for two people. A tiny Node.js server with no dependencies holds the one real copy of the board, and every open screen (phones, computers and a wall TV) updates within about a second when someone adds, edits, moves or deletes a card. Cards have priorities, owners, tags, due dates and checklists.",
-        "New in v0.02: if the server can't be reached, the board keeps working on the device you used last and queues your changes until it is back, with a Live / Reconnecting / Offline status dot. Each device asks once \"Who are you?\" (no passwords; it only sets the default owner and the last-changed-by note). TV mode (?tv=1) shows big text and a clock with no buttons. Export and Import still work, the server keeps rolling backups, the most recent change wins, and deleted cards stay deleted.",
-        "It runs in any browser and needs Node.js 18 or newer on the server. The repo includes install, kiosk and watchdog scripts for a Raspberry Pi."
+      "summary": "A shared to-do board for two people that keeps working offline, with a TV mode.",
+      "about": [
+        "Kanban Board is a shared to-do board for two people. Cards move through Ideas, To Do, Doing and Done, and each card can have a priority, an owner, tags, a due date and a checklist.",
+        "Everyone sees the same board: when someone adds, edits, moves or deletes a card, every open phone, computer and TV updates within about a second. If the connection drops, you can keep working and your changes catch up by themselves.",
+        "New in v0.02: each device asks once \"Who are you?\" (no passwords); a status dot shows Live, Reconnecting or Offline; a TV mode shows big text and a clock for a wall screen; and backups are kept automatically. If two people change the same card while offline, the most recent change wins, and a deleted card stays deleted."
+      ],
+      "technical": [
+        "A tiny Node.js server with no dependencies holds the one real copy of the board and pushes live updates to every open page. It keeps rolling backups (the last 30 versions, at most one every 5 minutes). Requires Node.js 18 or newer.",
+        "Runs in any browser; an open page queues changes while the server can't be reached. TV mode is the ?tv=1 address. The repo includes install, kiosk and watchdog scripts for a Raspberry Pi."
       ],
       "platforms": [
         "web"
       ],
       "platformNotes": {
-        "web": "Runs in any browser; self-hosted with a small Node.js server (Raspberry Pi scripts included)."
+        "web": "Runs in any browser; someone sets it up once on a small always-on computer."
       },
       "version": "0.02",
       "versionSource": "v0.02/ folder and APP_VERSION in v0.02/public/index.html (no git tags)",
@@ -184,7 +196,7 @@
       "links": {
         "download": {
           "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip",
-          "label": "Download source (.zip)"
+          "label": "Download (source code .zip)"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -201,17 +213,21 @@
       "name": "Cat Health Dashboard",
       "repo": "cat-health-dashboard",
       "category": "HealthApplication",
-      "summary": "A small web app for logging your cats' health, with a weight chart per cat.",
-      "description": [
-        "Cat Health Dashboard is a small single-page web app for logging cat health: weight, food, water, litter box, behavior, symptoms, meds given, vet visits and upcoming appointments, with a weight chart for each cat. Each entry shows who logged it.",
-        "It installs as a web app on phones, caches data offline in the browser, and syncs between phones through a here.now Site Data collection that you set up with your own config. Cats are added in the app; no data lives in the repo.",
-        "Built for cats (it has a litter box log and cat wording), but the fields are simple, so a fork can adapt it to other animals."
+      "summary": "A simple health log for your cats, with a weight chart for each cat.",
+      "about": [
+        "Cat Health Dashboard is a simple health log for your cats. Record weight, food, water, litter box, behavior, symptoms, meds given and vet visits, keep track of upcoming appointments, and see a weight chart for each cat. Each entry shows who logged it.",
+        "Add it to your phone's home screen like an app and share one log between phones. It keeps working when you're offline.",
+        "Built for cats, with a litter box log and cat wording, but the entries are simple, so it can be adapted to other animals."
+      ],
+      "technical": [
+        "A single-page web app (PWA) that installs on phones and caches data offline in the browser.",
+        "Syncs between phones through a here.now Site Data collection that you set up with your own config. Cats are added in the app; no data lives in the repo."
       ],
       "platforms": [
         "web"
       ],
       "platformNotes": {
-        "web": "Installable web app (PWA) for phones; needs your own sync config to share data between phones."
+        "web": "Add it to your phone's home screen; sharing between phones needs a one-time setup."
       },
       "version": "Unknown",
       "versionSource": "No tags, releases or version string in the repo.",
@@ -246,7 +262,7 @@
       "links": {
         "download": {
           "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/heads/master.zip",
-          "label": "Download source (.zip)"
+          "label": "Download (source code .zip)"
         },
         "githubRelease": null,
         "ownDownload": null,
