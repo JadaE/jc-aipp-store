@@ -1,0 +1,101 @@
+{
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, description, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. links.download may only point at github.com/<owner>/<repo> (releases, tags, archives). links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here; they need release-review approval first.",
+  "apps": [
+    {
+      "id": "galaxy-gridiron",
+      "name": "Galaxy Gridiron",
+      "repo": "galaxy-gridiron",
+      "category": "SportsApplication",
+      "summary": "A read-only fantasy football companion for Sleeper leagues.",
+      "description": [
+        "Galaxy Gridiron is a read-only companion for Sleeper fantasy football leagues. It never changes anything in your leagues and needs no password: you type your own Sleeper username and it shows your teams.",
+        "It is an Expo / React Native (TypeScript) Android app, with an iPhone web-app (PWA) export that you add to your Home Screen from Safari. An optional Cloudflare Worker powers an AI chat, so the app itself never holds an AI key."
+      ],
+      "platforms": ["android", "web"],
+      "platformNotes": { "web": "iPhone web app (PWA), added to the Home Screen from Safari." },
+      "version": "0.0.10",
+      "versionSource": "git tag v0.0.10; app/src/version.ts and app.json (expo.version)",
+      "icon": { "src": "assets/apps/galaxy-gridiron/icon.webp", "alt": "Galaxy Gridiron app icon" },
+      "screenshots": [],
+      "screenshotsNote": "No screenshots are committed to the public repo.",
+      "links": {
+        "download": { "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.10.zip", "label": "Download source (v0.0.10, .zip)" },
+        "iosAppStore": null
+      },
+      "vettedForks": [],
+      "todo": ["Add screenshots once they are committed to the repo.", "No GitHub release with an APK asset yet; only a source download is linked."]
+    },
+    {
+      "id": "swipe-clean",
+      "name": "Swipe Clean",
+      "repo": "swipe-clean",
+      "category": "UtilitiesApplication",
+      "summary": "Swipe through your photos to decide what to keep and what to delete.",
+      "description": [
+        "Swipe Clean helps you tidy a photo library one swipe at a time: keep or delete, with undo and streaks.",
+        "The Android app (Expo / React Native) sorts photos from the device library and uses the system trash and delete dialogs, through a small Kotlin module that talks to MediaStore. The Web version is a browser demo for Google Photos using the Picker API with a read-only scope; it runs in demo mode with generated placeholder photos until you add your own Google OAuth client ID."
+      ],
+      "platforms": ["android", "web"],
+      "platformNotes": { "web": "Browser demo (Google Photos Picker, read-only); demo mode without your own OAuth client ID." },
+      "version": "0.0.6",
+      "versionSource": "git tag v0.0.6; android/app/src/version.ts and app.json (expo.version)",
+      "icon": { "src": "assets/apps/swipe-clean/icon.webp", "alt": "Swipe Clean app icon" },
+      "screenshots": [],
+      "screenshotsNote": "No screenshots are committed to the public repo.",
+      "links": {
+        "download": { "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip", "label": "Download source (v0.0.6, .zip)" },
+        "iosAppStore": null
+      },
+      "vettedForks": [],
+      "todo": ["Add screenshots once they are committed to the repo.", "No GitHub release with an APK asset yet; only a source download is linked."]
+    },
+    {
+      "id": "kanban-board",
+      "name": "Kanban Board",
+      "repo": "kanban-board",
+      "category": "BusinessApplication",
+      "summary": "A shared, offline-tolerant Kanban board for two people, with a TV mode.",
+      "description": [
+        "Kanban Board is a shared board for two people. A tiny Node.js server with no dependencies holds the board and pushes live updates to every open screen, so phones, computers and a wall TV all show the same cards within about a second.",
+        "If the server can't be reached, an open page keeps working and queues changes until it is back. A TV mode (?tv=1) gives big text and a clock for a wall display, and the repo includes install, kiosk and watchdog scripts for a Raspberry Pi. Requires Node.js 18 or newer."
+      ],
+      "platforms": ["web"],
+      "platformNotes": { "web": "Runs in any browser; self-hosted with a small Node.js server (Raspberry Pi scripts included)." },
+      "version": "0.02",
+      "versionSource": "v0.02/ folder and APP_VERSION in v0.02/public/index.html (no git tags)",
+      "icon": { "src": "assets/apps/kanban-board/icon.svg", "alt": "Kanban Board placeholder icon" },
+      "screenshots": [],
+      "screenshotsNote": "No screenshots or icon are committed to the public repo (test screenshots are excluded). The icon is a placeholder.",
+      "links": {
+        "download": { "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip", "label": "Download source (.zip)" },
+        "iosAppStore": null
+      },
+      "vettedForks": [],
+      "todo": ["Add screenshots and a real icon once committed to the repo.", "No git tag for v0.02; source download points at the master branch."]
+    },
+    {
+      "id": "cat-health-dashboard",
+      "name": "Cat Health Dashboard",
+      "repo": "cat-health-dashboard",
+      "category": "HealthApplication",
+      "summary": "A small web app for logging your pets' health, with a weight chart per pet.",
+      "description": [
+        "Cat Health Dashboard is a small single-page web app for logging pet health: weight, food, water, litter box, behavior, symptoms, meds, vet visits and upcoming appointments, with a weight chart for each pet.",
+        "It installs as a web app on phones, caches data offline in the browser, and syncs between phones through a here.now Site Data collection that you set up with your own config. Pets are added in the app; no data lives in the repo."
+      ],
+      "platforms": ["web"],
+      "platformNotes": { "web": "Installable web app (PWA) for phones; needs your own sync config to share data between phones." },
+      "version": "Unknown",
+      "versionSource": "No tags, releases or version string in the repo.",
+      "icon": { "src": "assets/apps/cat-health-dashboard/icon.webp", "alt": "Cat Health Dashboard app icon" },
+      "screenshots": [],
+      "screenshotsNote": "No screenshots are committed to the public repo.",
+      "links": {
+        "download": { "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/heads/master.zip", "label": "Download source (.zip)" },
+        "iosAppStore": null
+      },
+      "vettedForks": [],
+      "todo": ["TODO: version is unknown; add a tag or version string to the repo.", "Add screenshots once they are committed to the repo.", "README title is 'Pet Health Dashboard'; confirm the display name."]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "JC AiPP Store Lite",
+  "tagline": "Small, open-source apps you can use or fork.",
+  "description": "A calm little app store for Jada's open-source apps: Android, Web and more. Every app links to its public GitHub repo so you, or your agent, can fork it.",
+  "baseUrl": "https://example.invalid",
+  "baseUrlTodo": "TODO: set the real public base URL after the release reviewer approves a domain. Used for canonical, Open Graph and sitemap URLs.",
+  "githubOwner": "JadaE",
+  "lang": "en"
+}
