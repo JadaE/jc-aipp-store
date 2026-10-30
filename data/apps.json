@@ -1,5 +1,5 @@
 {
-  "$schemaNote": "One entry per app. Required: id, name, repo, summary, description, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. links.download may only point at github.com/<owner>/<repo> (releases, tags, archives). links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here; they need release-review approval first.",
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, description, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, caption, width, height}; 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here.",
   "apps": [
     {
       "id": "galaxy-gridiron",
@@ -8,22 +8,61 @@
       "category": "SportsApplication",
       "summary": "A read-only fantasy football companion for Sleeper leagues.",
       "description": [
-        "Galaxy Gridiron is a read-only companion for Sleeper fantasy football leagues. It never changes anything in your leagues and needs no password: you type your own Sleeper username and it shows your teams.",
-        "It is an Expo / React Native (TypeScript) Android app, with an iPhone web-app (PWA) export that you add to your Home Screen from Safari. An optional Cloudflare Worker powers an AI chat, so the app itself never holds an AI key."
+        "Galaxy Gridiron is a read-only companion for Sleeper fantasy football leagues. It never changes anything in your leagues and needs no password: you type your own Sleeper username and it shows your teams across six tabs (Team, Matchup, League, Waivers, Trades and Picks). Tap any player for his card, news and live stats; the chat button answers questions about your team.",
+        "New in v0.0.10: backup quarterbacks are counted correctly in drop, pickup and trade tips; the player card shows a \"Live now\" box with points, projection and a stat breakdown during his game; picks are banana yellow so they no longer look like a win; and the Picks leaderboard grid, now called \"Picks by week\", shows the newest week first. The duplicate weekly chart and the video buttons were removed.",
+        "It is an Expo / React Native (TypeScript) Android app, with an iPhone web-app (PWA) export that you add to your Home Screen from Safari. An optional Cloudflare Worker powers the AI chat, so the app itself never holds an AI key."
       ],
-      "platforms": ["android", "web"],
-      "platformNotes": { "web": "iPhone web app (PWA), added to the Home Screen from Safari." },
+      "platforms": [
+        "android",
+        "web"
+      ],
+      "platformNotes": {
+        "web": "iPhone web app (PWA), added to the Home Screen from Safari."
+      },
       "version": "0.0.10",
       "versionSource": "git tag v0.0.10; app/src/version.ts and app.json (expo.version)",
-      "icon": { "src": "assets/apps/galaxy-gridiron/icon.webp", "alt": "Galaxy Gridiron app icon" },
-      "screenshots": [],
-      "screenshotsNote": "No screenshots are committed to the public repo.",
+      "icon": {
+        "src": "assets/apps/galaxy-gridiron/icon.webp",
+        "alt": "Galaxy Gridiron app icon"
+      },
+      "screenshots": [
+        {
+          "src": "assets/apps/galaxy-gridiron/shot-1.webp",
+          "alt": "Galaxy Gridiron launch screen: football and planet emoji over a starry purple background, an empty Sleeper username field, a Launch button, and the note that the app is read-only and needs no password.",
+          "caption": "Start screen: type a Sleeper username and launch. Read-only, no password.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/galaxy-gridiron/shot-2.webp",
+          "alt": "Tutorial card 1 of 7, Welcome to Galaxy Gridiron, explaining the six tabs (Team, Matchup, League, Waivers, Trades, Picks) and the chat button, with a Next button.",
+          "caption": "Tutorial, step 1: the six tabs and the chat button.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/galaxy-gridiron/shot-3.webp",
+          "alt": "Tutorial card 3 of 7, Picks and leaderboard, explaining weekly NFL picks, your record and chart, and the shared leaderboard, with Back and Next buttons.",
+          "caption": "Tutorial, step 3: weekly picks and the shared leaderboard.",
+          "width": 600,
+          "height": 1298
+        }
+      ],
+      "screenshotsNote": "Rendered from a fresh clone of the public repo (v0.0.10 web export, no network access). Screens that need a Sleeper account are not shown.",
       "links": {
-        "download": { "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.10.zip", "label": "Download source (v0.0.10, .zip)" },
+        "download": {
+          "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.10.zip",
+          "label": "Download source (v0.0.10, .zip)"
+        },
+        "githubRelease": null,
+        "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": ["Add screenshots once they are committed to the repo.", "No GitHub release with an APK asset yet; only a source download is linked."]
+      "todo": [
+        "No GitHub release with an APK asset yet; only a source download is linked.",
+        "Account screens (Team, Matchup, League) need mocked league data before they can be shown."
+      ]
     },
     {
       "id": "swipe-clean",
@@ -32,22 +71,68 @@
       "category": "UtilitiesApplication",
       "summary": "Swipe through your photos to decide what to keep and what to delete.",
       "description": [
-        "Swipe Clean helps you tidy a photo library one swipe at a time: keep or delete, with undo and streaks.",
-        "The Android app (Expo / React Native) sorts photos from the device library and uses the system trash and delete dialogs, through a small Kotlin module that talks to MediaStore. The Web version is a browser demo for Google Photos using the Picker API with a read-only scope; it runs in demo mode with generated placeholder photos until you add your own Google OAuth client ID."
+        "Swipe Clean helps you tidy a photo library one swipe at a time: swipe left to add a photo to your Delete pile, right to keep it, with undo, combos and a daily streak. The app never deletes anything by itself and never pre-selects photos; you remove them yourself through Android's own delete dialog (or in Google Photos on the web).",
+        "New in v0.0.6: Lil, the mascot, sits centred in a rounded header on every page; the swipe screen header shows Photos done and Minutes today; Settings has an Appearance choice of Dark (default), Light or Match my phone; and rapid taps on Lil no longer get stuck. v0.0.5 added a new app icon and Lil's happy reactions and idle poses, with Show Lil and Calm mode switches that respect your phone's Remove animations setting.",
+        "The Android app is built with Expo / React Native and a small Kotlin module that talks to MediaStore. The Web version is a browser demo for Google Photos using the Picker API with a read-only scope; it runs in demo mode with generated placeholder photos until you add your own Google OAuth client ID."
       ],
-      "platforms": ["android", "web"],
-      "platformNotes": { "web": "Browser demo (Google Photos Picker, read-only); demo mode without your own OAuth client ID." },
+      "platforms": [
+        "android",
+        "web"
+      ],
+      "platformNotes": {
+        "web": "Browser demo (Google Photos Picker, read-only); demo mode without your own OAuth client ID."
+      },
       "version": "0.0.6",
       "versionSource": "git tag v0.0.6; android/app/src/version.ts and app.json (expo.version)",
-      "icon": { "src": "assets/apps/swipe-clean/icon.webp", "alt": "Swipe Clean app icon" },
-      "screenshots": [],
-      "screenshotsNote": "No screenshots are committed to the public repo.",
+      "icon": {
+        "src": "assets/apps/swipe-clean/icon.webp",
+        "alt": "Swipe Clean app icon"
+      },
+      "screenshots": [
+        {
+          "src": "assets/apps/swipe-clean/shot-1.webp",
+          "alt": "Swipe Clean web demo home screen: the heading Sort your photos, one swipe at a time, a note that the app never deletes anything, a Pick photos from Google Photos button and a Try the demo button with 60 fake photos.",
+          "caption": "Web demo home: connect Google Photos or try the demo.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/swipe-clean/shot-2.webp",
+          "alt": "Swipe screen in the demo: a placeholder landscape illustration with its file name and date, progress 8 of 60, Delete pile 4, Could free 14.5 MB, Kept 4, and round Delete, Undo and Keep buttons.",
+          "caption": "Swiping: left adds to the Delete pile, right keeps. Placeholder demo photos.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/swipe-clean/shot-3.webp",
+          "alt": "Nice work summary with confetti: 8 sorted, 14.5 MB you could free, 4 in Delete pile, 4 kept, best combo 8, 0.4 seconds per photo, and buttons to review the Delete pile or keep sorting.",
+          "caption": "Session summary with your stats.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/swipe-clean/shot-4.webp",
+          "alt": "Your Delete pile with 4 placeholder images (a line sketch, two cartoon cats and a sunset) each with a keep button, and a button that shows how to delete them yourself.",
+          "caption": "Review the Delete pile before deleting anything yourself.",
+          "width": 600,
+          "height": 1298
+        }
+      ],
+      "screenshotsNote": "Rendered from the web demo in a fresh clone of the public repo, using its generated placeholder photos. The Android app looks different.",
       "links": {
-        "download": { "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip", "label": "Download source (v0.0.6, .zip)" },
+        "download": {
+          "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip",
+          "label": "Download source (v0.0.6, .zip)"
+        },
+        "githubRelease": null,
+        "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": ["Add screenshots once they are committed to the repo.", "No GitHub release with an APK asset yet; only a source download is linked."]
+      "todo": [
+        "No GitHub release with an APK asset yet; only a source download is linked.",
+        "Add Android screenshots rendered with placeholder photos."
+      ]
     },
     {
       "id": "kanban-board",
@@ -56,46 +141,121 @@
       "category": "BusinessApplication",
       "summary": "A shared, offline-tolerant Kanban board for two people, with a TV mode.",
       "description": [
-        "Kanban Board is a shared board for two people. A tiny Node.js server with no dependencies holds the board and pushes live updates to every open screen, so phones, computers and a wall TV all show the same cards within about a second.",
-        "If the server can't be reached, an open page keeps working and queues changes until it is back. A TV mode (?tv=1) gives big text and a clock for a wall display, and the repo includes install, kiosk and watchdog scripts for a Raspberry Pi. Requires Node.js 18 or newer."
+        "Kanban Board is a shared board for two people. A tiny Node.js server with no dependencies holds the one real copy of the board, and every open screen (phones, computers and a wall TV) updates within about a second when someone adds, edits, moves or deletes a card. Cards have priorities, owners, tags, due dates and checklists.",
+        "New in v0.02: if the server can't be reached, the board keeps working on the device you used last and queues your changes until it is back, with a Live / Reconnecting / Offline status dot. Each device asks once \"Who are you?\" (no passwords; it only sets the default owner and the last-changed-by note). TV mode (?tv=1) shows big text and a clock with no buttons. Export and Import still work, the server keeps rolling backups, the most recent change wins, and deleted cards stay deleted.",
+        "It runs in any browser and needs Node.js 18 or newer on the server. The repo includes install, kiosk and watchdog scripts for a Raspberry Pi."
       ],
-      "platforms": ["web"],
-      "platformNotes": { "web": "Runs in any browser; self-hosted with a small Node.js server (Raspberry Pi scripts included)." },
+      "platforms": [
+        "web"
+      ],
+      "platformNotes": {
+        "web": "Runs in any browser; self-hosted with a small Node.js server (Raspberry Pi scripts included)."
+      },
       "version": "0.02",
       "versionSource": "v0.02/ folder and APP_VERSION in v0.02/public/index.html (no git tags)",
-      "icon": { "src": "assets/apps/kanban-board/icon.svg", "alt": "Kanban Board placeholder icon" },
-      "screenshots": [],
-      "screenshotsNote": "No screenshots or icon are committed to the public repo (test screenshots are excluded). The icon is a placeholder.",
+      "icon": {
+        "src": "assets/apps/kanban-board/icon.svg",
+        "alt": "Kanban Board placeholder icon"
+      },
+      "screenshots": [
+        {
+          "src": "assets/apps/kanban-board/shot-1.webp",
+          "alt": "Kanban Board on a desktop browser with four columns, Ideas, To Do, Doing and Done, holding demo cards such as Plan a stargazing night and Paint the hallway, with priority, owner (Kida, Micah or Both) and tag chips, and a banner showing one card due today.",
+          "caption": "Desktop: four columns, owners, tags and a due-today banner. Demo board for Kida and Micah.",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "src": "assets/apps/kanban-board/shot-2.webp",
+          "alt": "Kanban Board on a phone: the search and filter bar, the Kida name chip, a Live status dot, the due-today banner and the Ideas column with three demo cards.",
+          "caption": "Phone: the same live board, with the Who are you chip and Live status.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/kanban-board/shot-3.webp",
+          "alt": "TV mode on a dark screen: the same four columns in large text with a clock and a Live status dot, and no buttons.",
+          "caption": "TV mode (?tv=1) for a wall display.",
+          "width": 1280,
+          "height": 720
+        }
+      ],
+      "screenshotsNote": "Rendered from a fresh clone of the public repo with a fictional demo board for Kida and Micah.",
       "links": {
-        "download": { "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip", "label": "Download source (.zip)" },
+        "download": {
+          "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip",
+          "label": "Download source (.zip)"
+        },
+        "githubRelease": null,
+        "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": ["Add screenshots and a real icon once committed to the repo.", "No git tag for v0.02; source download points at the master branch."]
+      "todo": [
+        "Add a real icon once one is committed to the repo; the current icon is a placeholder.",
+        "No git tag for v0.02; source download points at the master branch."
+      ]
     },
     {
       "id": "cat-health-dashboard",
       "name": "Cat Health Dashboard",
       "repo": "cat-health-dashboard",
       "category": "HealthApplication",
-      "summary": "A small web app for logging your pets' health, with a weight chart per pet.",
+      "summary": "A small web app for logging your cats' health, with a weight chart per cat.",
       "description": [
-        "Cat Health Dashboard is a small single-page web app for logging pet health: weight, food, water, litter box, behavior, symptoms, meds, vet visits and upcoming appointments, with a weight chart for each pet.",
-        "It installs as a web app on phones, caches data offline in the browser, and syncs between phones through a here.now Site Data collection that you set up with your own config. Pets are added in the app; no data lives in the repo."
+        "Cat Health Dashboard is a small single-page web app for logging cat health: weight, food, water, litter box, behavior, symptoms, meds given, vet visits and upcoming appointments, with a weight chart for each cat. Each entry shows who logged it.",
+        "It installs as a web app on phones, caches data offline in the browser, and syncs between phones through a here.now Site Data collection that you set up with your own config. Cats are added in the app; no data lives in the repo.",
+        "Built for cats (it has a litter box log and cat wording), but the fields are simple, so a fork can adapt it to other animals."
       ],
-      "platforms": ["web"],
-      "platformNotes": { "web": "Installable web app (PWA) for phones; needs your own sync config to share data between phones." },
+      "platforms": [
+        "web"
+      ],
+      "platformNotes": {
+        "web": "Installable web app (PWA) for phones; needs your own sync config to share data between phones."
+      },
       "version": "Unknown",
       "versionSource": "No tags, releases or version string in the repo.",
-      "icon": { "src": "assets/apps/cat-health-dashboard/icon.webp", "alt": "Cat Health Dashboard app icon" },
-      "screenshots": [],
-      "screenshotsNote": "No screenshots are committed to the public repo.",
+      "icon": {
+        "src": "assets/apps/cat-health-dashboard/icon.webp",
+        "alt": "Cat Health Dashboard app icon"
+      },
+      "screenshots": [
+        {
+          "src": "assets/apps/cat-health-dashboard/shot-1.webp",
+          "alt": "Cat Health Dashboard home on a phone: an Upcoming card with a dental check for Juniper, and two demo cats, Biscuit (5 years, male, 10.7 lb) and Juniper (about 6 years, 13.1 lb, flagged symptom this week), with an Add a cat button.",
+          "caption": "Home: upcoming appointments and each cat at a glance. Fictional cats Biscuit and Juniper.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/cat-health-dashboard/shot-2.webp",
+          "alt": "Biscuit's page: profile line, an Upcoming section with an Add appointment button, eight log buttons (Weight, Food, Water, Litter box, Behavior, Symptom, Meds given, Vet visit) and the start of a weight chart.",
+          "caption": "One cat's page: quick log buttons and appointments.",
+          "width": 600,
+          "height": 1298
+        },
+        {
+          "src": "assets/apps/cat-health-dashboard/shot-3.webp",
+          "alt": "Biscuit's weight chart from early September to late October rising from about 10.2 to 10.7 pounds, then recent entries for food, water, behavior and meds, each logged by Kida or Micah.",
+          "caption": "Weight chart and recent entries, logged by Kida and Micah.",
+          "width": 600,
+          "height": 1298
+        }
+      ],
+      "screenshotsNote": "Rendered from a fresh clone of the public repo with placeholder config, its local mock sync server, and fictional demo data.",
       "links": {
-        "download": { "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/heads/master.zip", "label": "Download source (.zip)" },
+        "download": {
+          "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/heads/master.zip",
+          "label": "Download source (.zip)"
+        },
+        "githubRelease": null,
+        "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": ["TODO: version is unknown; add a tag or version string to the repo.", "Add screenshots once they are committed to the repo.", "README title is 'Pet Health Dashboard'; confirm the display name."]
+      "todo": [
+        "TODO: version is unknown; add a tag or version string to the repo."
+      ]
     }
   ]
 }

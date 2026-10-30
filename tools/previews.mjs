@@ -8,15 +8,21 @@ const out = process.env.PREVIEW_DIR || path.resolve(root, '../aipp-store-preview
 fs.mkdirSync(out, { recursive: true });
 const chrome = process.env.CHROME || '/usr/bin/google-chrome';
 const b = await chromium.launch({ executablePath: chrome, args: ['--no-sandbox'] });
+const D = { width: 1440, height: 900 }, M = { width: 390, height: 844 };
 const shots = [
-  ['home-desktop.png', 'index.html', { width: 1440, height: 900 }, 1],
-  ['home-mobile.png', 'index.html', { width: 390, height: 844 }, 2],
-  ['app-galaxy-gridiron-desktop.png', 'apps/galaxy-gridiron/index.html', { width: 1440, height: 900 }, 1],
-  ['app-galaxy-gridiron-mobile.png', 'apps/galaxy-gridiron/index.html', { width: 390, height: 844 }, 2],
+  ['home-dark-desktop.png', 'index.html', D, 1, 'dark'],
+  ['home-dark-mobile.png', 'index.html', M, 2, 'dark'],
+  ['home-light-desktop.png', 'index.html', D, 1, 'light'],
+  ['home-light-mobile.png', 'index.html', M, 2, 'light'],
+  ['app-galaxy-gridiron-dark-desktop.png', 'apps/galaxy-gridiron/index.html', D, 1, 'dark'],
+  ['app-galaxy-gridiron-light-mobile.png', 'apps/galaxy-gridiron/index.html', M, 2, 'light'],
 ];
-for (const [name, p, viewport, dpr] of shots) {
+for (const [name, p, viewport, dpr, theme] of shots) {
   const page = await b.newPage({ viewport, deviceScaleFactor: dpr, reducedMotion: 'reduce' });
+  await page.addInitScript((t) => { try { localStorage.setItem('aipp-theme', t); } catch {} }, theme);
   await page.goto(pathToFileURL(path.join(root, 'dist', p)).href, { waitUntil: 'load' });
+  // Load lazy gallery images too, so full-page previews show every screenshot.
+  await page.evaluate(async () => { for (const i of document.images) { i.loading = 'eager'; try { await i.decode(); } catch {} } });
   await page.screenshot({ path: path.join(out, name), fullPage: true });
   console.log(path.join(out, name));
 }
