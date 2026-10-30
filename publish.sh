@@ -41,6 +41,10 @@ fi
 # Never publish an untested build
 (cd "$DIR" && node build.mjs && node test.mjs)
 
+# Release gate: requires Review & Release sign-off for this exact build
+VERSION=$(node -p "require('$DIR/package.json').version")
+bash /workspace/releases/tools/release-gate.sh aipp-store "$VERSION" "$DIR/dist" || exit 1
+
 BUILD=$(mktemp -d /tmp/aipp-store-build.XXXX)
 trap 'rm -rf "$BUILD"' EXIT
 cp -a "$DIR/dist/." "$BUILD/"
