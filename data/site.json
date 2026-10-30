@@ -3,10 +3,10 @@
   "version": "0.0.4",
   "siteUrl": "https://example.invalid",
   "siteUrlNote": "Placeholder. The real site URL is read at build time from config.local.json (site.siteUrl, or herenow.slug) or the SITE_URL env var, so it never lives in the repo.",
-  "description": "A small collection of apps for everyday things: fantasy football, tidier photos, a shared to-do board and a health log for your cats.",
+  "description": "Apps for everyday things, all in one place: fantasy football, tidier photos, a shared to-do board and a health log for your cats.",
   "hero": {
     "title": "JC AiPP Store Lite",
-    "lead": "A small collection of apps for everyday things. Have a look around."
+    "lead": "Apps for everyday things, all in one place. Have a look around."
   },
   "footer": "Download apps the easy way, or fork any of them on GitHub if you're tech-savvy or have an AI agent.",
   "logo": {
