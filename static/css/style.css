@@ -122,6 +122,12 @@ img{max-width:100%;height:auto;display:block}
 .btn:hover{border-color:var(--line-strong);color:var(--text)}
 .btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .btn.primary:hover{background:var(--accent-hover);color:var(--on-accent)}
+.btn.action{background:var(--chip);border-color:var(--line-strong);min-width:12rem;justify-content:center}
+.actions{margin-bottom:.5rem}
+.actions-hint{color:var(--muted);font-size:.95rem;margin:0 0 1.5rem;max-width:44rem}
+.technical{margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--line)}
+.technical h3{font-size:1rem;margin:0 0 .5rem}
+.technical p{font-size:.95rem;margin:.4rem 0}
 .btn svg{width:1.1em;height:1.1em;fill:currentColor}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.25rem 1.4rem;margin:0 0 1.25rem}
 .panel h2{font-size:1.15rem;margin:0 0 .6rem}
