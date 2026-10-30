@@ -128,6 +128,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
   if (known(a.version)) ld.softwareVersion = a.version;
   if (dl) ld.downloadUrl = dl.url;
   if (a.links.iosAppStore) ld.installUrl = a.links.iosAppStore;
+  const dlIcon = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14ZM7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>';
   const gh = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v.878A2.25 2.25 0 0 0 5.75 8.5h1.5v2.128a2.251 2.251 0 1 0 1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.878a2.25 2.25 0 1 0-1.5 0v.878a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 5 6.25v-.878Zm3.75 7.378a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm3-8.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"/></svg>';
   return page({
     title: `${a.name} | ${site.name}`,
@@ -140,16 +141,16 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
   ${iconImg(a, rel, 96, true)}
   <div><h1 id="app-title">${esc(a.name)}</h1><p>${esc(a.summary)}</p></div>
 </section>
-<div class="actions">
-  <a class="btn primary" href="${repo}/fork">${gh}Fork on GitHub</a>
-  ${dl ? `<a class="btn" href="${esc(dl.url)}">${esc(dl.label)}</a>` : ''}
-  <a class="btn" href="${repo}">View repo</a>
-  ${a.links.iosAppStore ? `<a class="btn" href="${esc(a.links.iosAppStore)}">App Store</a>` : ''}
+<div class="actions" role="group" aria-label="Get ${esc(a.name)}">
+  ${dl ? `<a class="btn action" href="${esc(dl.url)}">${dlIcon}${esc(dl.label)}</a>` : ''}
+  <a class="btn action" href="${repo}/fork">${gh}Fork on GitHub</a>
+  ${a.links.iosAppStore ? `<a class="btn action" href="${esc(a.links.iosAppStore)}">App Store</a>` : ''}
 </div>
+<p class="actions-hint">${esc(site.downloadHint)}</p>
 <div class="app-layout">
   <div>
-    <section class="panel" aria-labelledby="about-title"><h2 id="about-title">About</h2>${a.description.map((p) => `<p>${esc(p)}</p>`).join('')}</section>
     <section class="panel" aria-labelledby="shots-title"><h2 id="shots-title">Screenshots</h2>${shots}</section>
+    <section class="panel" aria-labelledby="about-title" data-section="about"><h2 id="about-title">About</h2>${a.about.map((p) => `<p>${esc(p)}</p>`).join('')}</section>
     <section class="panel soon" aria-labelledby="forks-title"><h2 id="forks-title">Vetted forks</h2><p>Vetted forks coming soon. Forks that pass review will be listed here.</p></section>
   </div>
   <aside class="panel" aria-labelledby="facts-title">
@@ -160,6 +161,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
       <dt>Source</dt><dd><a href="${repo}">${site.githubOwner}/${esc(a.repo)}</a></dd>
     </dl>
     ${notes || iosNote ? `<ul class="notes">${notes}${iosNote}</ul>` : ''}
+    <section class="technical" aria-labelledby="tech-title" data-section="technical"><h3 id="tech-title">Technical details</h3>${a.technical.map((p) => `<p>${esc(p)}</p>`).join('')}</section>
   </aside>
 </div>`,
   });

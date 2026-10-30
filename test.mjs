@@ -9,6 +9,7 @@ import { resolveSiteUrl } from './siteurl.mjs';
 const root = path.dirname(new URL(import.meta.url).pathname);
 const dist = path.join(root, 'dist');
 let failed = 0;
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ok = (m) => console.log(`  ok   ${m}`);
 const fail = (m) => { failed++; console.log(`  FAIL ${m}`); };
 const skip = (m) => console.log(`  skip ${m}`);
@@ -38,12 +39,15 @@ const PLAT = ['android', 'ios', 'windows', 'macos', 'web'];
 const ids = new Set();
 for (const a of apps) {
   const where = a.id || '(no id)';
-  for (const k of ['id', 'name', 'repo', 'summary', 'description', 'platforms', 'version', 'icon', 'screenshots', 'links'])
+  for (const k of ['id', 'name', 'repo', 'summary', 'about', 'technical', 'platforms', 'version', 'icon', 'screenshots', 'links'])
     if (a[k] === undefined || a[k] === '') fail(`${where}: missing ${k}`);
   if (!/^[a-z0-9-]+$/.test(a.id || '')) fail(`${where}: id must be kebab-case`);
   if (ids.has(a.id)) fail(`${where}: duplicate id`); ids.add(a.id);
   if (!Array.isArray(a.platforms) || !a.platforms.length || a.platforms.some((p) => !PLAT.includes(p))) fail(`${where}: bad platforms ${a.platforms}`);
-  if (!Array.isArray(a.description) || !a.description.length) fail(`${where}: description must be a non-empty array`);
+  for (const k of ['about', 'technical']) if (!Array.isArray(a[k]) || !a[k].length) fail(`${where}: ${k} must be a non-empty array`);
+  if ('description' in a) fail(`${where}: use about[] and technical[] instead of description`);
+  const JARGON = /\b(Expo|React Native|Node\.?js|PWA|MediaStore|Cloudflare|Worker|TypeScript|Kotlin|API|OAuth|here\.now|Raspberry Pi|server|scope|dependenc)/i;
+  for (const t of [a.summary, ...(a.about || []), ...Object.values(a.platformNotes || {})]) if (JARGON.test(t || '')) fail(`${where}: technical jargon "${(t.match(JARGON) || [])[0]}" in plain-language text; move it to technical[]`);
   if (a.version === 'Unknown' && !(a.todo || []).some((t) => /version/i.test(t))) fail(`${where}: Unknown version needs a TODO`);
   if (a.version !== 'Unknown' && !/^v?\d+(\.\d+)*$/.test(a.version)) fail(`${where}: version "${a.version}" is not Unknown or numeric`);
   const repoRe = new RegExp(`^https://github\\.com/${owner}/${a.repo}(/|$)`);
@@ -98,6 +102,32 @@ for (const a of apps) {
   if (/releases\/download\//.test(built)) fail(`${a.id}: a release-asset download is rendered (must stay source-only)`);
 }
 if (failed === failedBefore) ok(`${shotCount} screenshots exist, match their sizes, and have alt text and captions`);
+
+// 1c. app page layout: Download first, equal weight with Fork, no View repo button, order, About vs Technical
+section('app page layout');
+const layoutBefore = failed;
+for (const a of apps) {
+  const f = path.join(dist, 'apps', a.id, 'index.html');
+  if (!fs.existsSync(f)) { fail(`${a.id}: page missing`); continue; }
+  const h = fs.readFileSync(f, 'utf8');
+  const actions = (h.match(/<div class="actions"[\s\S]*?<\/div>/) || [''])[0];
+  const btns = [...actions.matchAll(/<a class="([^"]+)" href="([^"]+)"/g)];
+  if (/View repo/i.test(h)) fail(`${a.id}: 'View repo' button must be removed`);
+  if (!btns.length || !/\/archive\/|\/releases\//.test(btns[0][2])) fail(`${a.id}: Download must be the first button`);
+  if (!btns[1] || !/\/fork$/.test(btns[1][2])) fail(`${a.id}: Fork must come right after Download`);
+  if (btns.some((b) => b[2].endsWith('/fork') && /\bprimary\b/.test(b[1]))) fail(`${a.id}: Fork must not be the highlighted button`);
+  if (btns[0] && btns[1] && btns[0][1] !== btns[1][1]) fail(`${a.id}: Download and Fork must share the same style (equal weight)`);
+  if (!/<p class="actions-hint">[^<]{20,}<\/p>/.test(h)) fail(`${a.id}: plain download/fork hint missing`);
+  const pos = ['id="shots-title"', 'id="about-title"', 'id="facts-title"', 'id="tech-title"'].map((k) => h.indexOf(k));
+  if (pos.some((p) => p < 0) || pos.some((p, i) => i && p < pos[i - 1])) fail(`${a.id}: order must be Screenshots, About, Details, then Technical details last`);
+  const about = (h.match(/data-section="about">[\s\S]*?<\/section>/) || [''])[0];
+  const tech = (h.match(/data-section="technical">[\s\S]*?<\/section>/) || [''])[0];
+  const aside = (h.match(/<aside[\s\S]*?<\/aside>/) || [''])[0];
+  if (!tech || !aside.includes(tech) || !aside.trimEnd().replace(/<\/aside>$/, '').trimEnd().endsWith('</section>')) fail(`${a.id}: Technical details must be the last part of Details`);
+  for (const t of a.technical) if (about.includes(esc(t).slice(0, 40))) fail(`${a.id}: technical text appears in About`);
+  for (const t of a.about) if (tech.includes(esc(t).slice(0, 40))) fail(`${a.id}: About text appears in Technical details`);
+}
+if (failed === layoutBefore) ok('Download first and same style as Fork, no View repo button, Screenshots > About > Details > Technical, no mixing');
 
 // 2. links and images in the build
 section('links and images');

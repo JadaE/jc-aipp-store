@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.0.3
+- App pages: Download comes first, and Download and Fork now look the same (Fork is no longer highlighted). The Download label says plainly that you get the source code as a .zip, and a short hint under the buttons explains what Download and Fork give you.
+- The "View repo" button is gone; the repo link stays under Details > Source.
+- New order: buttons, then Screenshots, then About, then Details.
+- Each app now has a plain-language About (what it does and why you'd want it) and separate Technical details (stack, hosting, requirements), shown last in the Details box. Home-page blurbs and platform notes are simpler too.
+- Tests check the button order and style, that the View repo button is gone, the section order, and that technical words stay out of the plain-language text.
+
 ## v0.0.2
 - Stars: the background starfield is now visible, still subtle, with a gentle twinkle (no motion with reduced motion on).
 - Light mode: a "Light mode" toggle in the header switches to a soft dawn theme with faint stars. Dark stays the default, and your choice is remembered.

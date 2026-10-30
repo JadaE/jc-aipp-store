@@ -29,6 +29,12 @@ Replace `static/assets/logo.svg` (dark theme) and `static/assets/logo-light.svg`
 update `logo.width`/`logo.height` in `data/site.json`. Set `logo.includesWordmark` to `true` if the artwork contains the
 "JC AiPP Store" text; "Lite" is always rendered separately.
 
+## App text
+Each app in `data/apps.json` has `about` (plain language for non-technical people: what it does and why you'd want it)
+and `technical` (stack, hosting, requirements). They are never mixed: About sits under the screenshots, and Technical
+details is the last part of the Details box. `npm test` fails if words like Expo, Node.js or PWA show up in `summary`,
+`about` or `platformNotes`.
+
 ## Screenshots
 Each app has 0 to 4 screenshots in `static/assets/apps/<id>/shot-N.webp`, listed in `data/apps.json` with `src`, `alt`,
 `caption`, `width` and `height`. They are rendered from a fresh clone of the app's public repo, using only fictional demo
