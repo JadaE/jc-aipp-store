@@ -53,8 +53,51 @@ for (const a of apps) {
     if (!img?.src || !fs.existsSync(path.join(root, 'static', img.src))) fail(`${where}: image missing: ${img?.src}`);
     if (!img?.alt) fail(`${where}: image without alt: ${img?.src}`);
   }
+  // Reserved download slots: present, but null or disabled until a release reviewer approves them. Never rendered.
+  for (const k of ['githubRelease', 'ownDownload']) {
+    if (!(k in (a.links || {}))) fail(`${where}: links.${k} missing (use null)`);
+    const v = a.links?.[k];
+    if (v != null && v.enabled !== false) fail(`${where}: links.${k} must be null or {enabled:false} until approved`);
+    if (k === 'githubRelease' && v?.url && !new RegExp(`^https://github\\.com/${owner}/${a.repo}/releases/`).test(v.url)) fail(`${where}: links.githubRelease must be a GitHub Releases URL of its repo`);
+  }
 }
 if (apps.length && !failed) ok(`${apps.length} apps valid`);
+
+// 1b. screenshots: files exist, real dimensions match, alt text and captions are present, gallery is rendered
+section('screenshots');
+function imgSize(file) {
+  const b = fs.readFileSync(file);
+  if (b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP') {
+    const c = b.toString('ascii', 12, 16);
+    if (c === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
+    if (c === 'VP8L') { const n = b.readUInt32LE(21); return { w: 1 + (n & 0x3fff), h: 1 + ((n >> 14) & 0x3fff) }; }
+    if (c === 'VP8 ') return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+  }
+  if (b.readUInt32BE(0) === 0x89504e47) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  return null;
+}
+let shotCount = 0; const failedBefore = failed;
+for (const a of apps) {
+  const list = a.screenshots || [];
+  if (!list.length && !a.screenshotsNote) fail(`${a.id}: no screenshots and no screenshotsNote explaining why`);
+  if (list.length > 4) fail(`${a.id}: more than 4 screenshots`);
+  const built = fs.existsSync(path.join(dist, 'apps', a.id, 'index.html')) ? fs.readFileSync(path.join(dist, 'apps', a.id, 'index.html'), 'utf8') : '';
+  if (list.length && !/<ul class="gallery" tabindex="0" aria-label="[^"]+"/.test(built)) fail(`${a.id}: gallery not rendered accessibly`);
+  for (const s of list) {
+    shotCount++;
+    const f = path.join(root, 'static', s.src || '');
+    if (!s.src || !/\.(webp|png)$/.test(s.src) || !fs.existsSync(f)) { fail(`${a.id}: screenshot file missing or not WebP/PNG: ${s.src}`); continue; }
+    if (!fs.existsSync(path.join(dist, s.src))) fail(`${a.id}: screenshot not copied to dist: ${s.src}`);
+    if (fs.statSync(f).size > 150 * 1024) fail(`${a.id}: screenshot over 150 KB: ${s.src}`);
+    if (!s.alt || s.alt.trim().length < 20) fail(`${a.id}: screenshot needs descriptive alt text (20+ chars): ${s.src}`);
+    if (!s.caption) fail(`${a.id}: screenshot needs a caption: ${s.src}`);
+    const sz = imgSize(f);
+    if (!sz || sz.w !== s.width || sz.h !== s.height) fail(`${a.id}: width/height ${s.width}x${s.height} do not match file ${sz ? sz.w + 'x' + sz.h : '?'}: ${s.src}`);
+    if (!built.includes(`alt="${s.alt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"`)) fail(`${a.id}: built page lacks alt for ${s.src}`);
+  }
+  if (/releases\/download\//.test(built)) fail(`${a.id}: a release-asset download is rendered (must stay source-only)`);
+}
+if (failed === failedBefore) ok(`${shotCount} screenshots exist, match their sizes, and have alt text and captions`);
 
 // 2. links and images in the build
 section('links and images');

@@ -29,5 +29,26 @@ Replace `static/assets/logo.svg` (dark theme) and `static/assets/logo-light.svg`
 update `logo.width`/`logo.height` in `data/site.json`. Set `logo.includesWordmark` to `true` if the artwork contains the
 "JC AiPP Store" text; "Lite" is always rendered separately.
 
+## Screenshots
+Each app has 0 to 4 screenshots in `static/assets/apps/<id>/shot-N.webp`, listed in `data/apps.json` with `src`, `alt`,
+`caption`, `width` and `height`. They are rendered from a fresh clone of the app's public repo, using only fictional demo
+data (for example Kida and Micah, and made-up pet names) and placeholder images: never real accounts, IDs, emails, photos
+or private URLs. App pages show them in a keyboard-scrollable gallery; `npm test` checks that every file exists, its size
+matches the data, and it has alt text and a caption.
+
+## Download data model
+Downloads are **source-only** for now. Each app's `links` object has:
+
+| Field | Now | Meaning |
+|---|---|---|
+| `download` | GitHub source zip | The only download the site renders. Must be on `github.com/<owner>/<repo>`. |
+| `githubRelease` | `null` | Reserved: a GitHub Releases asset, e.g. `{"url": "https://github.com/<owner>/<repo>/releases/download/<tag>/<file>", "label": "...", "enabled": false}`. |
+| `ownDownload` | `null` | Reserved: an owner-hosted download link, e.g. `{"url": "...", "label": "...", "enabled": false}`. |
+| `iosAppStore` | `null` | Reserved: an `apps.apple.com` listing. |
+
+`githubRelease` and `ownDownload` must stay `null` or `"enabled": false` (the tests enforce this) and the build never
+renders them. Turning either one on needs release-review approval (including the legal question about direct app
+downloads) and a build change. Unlisted app URLs never go in this repo.
+
 ## Release notes
 See `CHANGELOG.md`.

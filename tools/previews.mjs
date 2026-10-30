@@ -21,6 +21,8 @@ for (const [name, p, viewport, dpr, theme] of shots) {
   const page = await b.newPage({ viewport, deviceScaleFactor: dpr, reducedMotion: 'reduce' });
   await page.addInitScript((t) => { try { localStorage.setItem('aipp-theme', t); } catch {} }, theme);
   await page.goto(pathToFileURL(path.join(root, 'dist', p)).href, { waitUntil: 'load' });
+  // Load lazy gallery images too, so full-page previews show every screenshot.
+  await page.evaluate(async () => { for (const i of document.images) { i.loading = 'eager'; try { await i.decode(); } catch {} } });
   await page.screenshot({ path: path.join(out, name), fullPage: true });
   console.log(path.join(out, name));
 }

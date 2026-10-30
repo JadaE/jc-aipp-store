@@ -109,9 +109,13 @@ function appPage(a) {
   const rel = '../../';
   const repo = repoUrl(a);
   const dl = a.links && a.links.download;
+  // Accessible gallery: a keyboard-scrollable list of figures; each image links to its full-size file.
   const shots = a.screenshots.length
-    ? `<div class="shots">${a.screenshots.map((s) => `<img src="${rel}${s.src}" alt="${esc(s.alt)}" width="${s.width}" height="${s.height}" loading="lazy" decoding="async">`).join('')}</div>`
-    : `<div class="shot-placeholder" role="note"><p><strong>Screenshots coming soon.</strong><br>None are published in the repo yet.</p></div>`;
+    ? `<p class="shots-hint" id="shots-hint-${a.id}">${a.screenshots.length} screenshots. Scroll sideways (or focus the gallery and use the arrow keys); select a screenshot to open it full size.</p>
+<ul class="gallery" tabindex="0" aria-label="${esc(a.name)} screenshots" aria-describedby="shots-hint-${a.id}">
+${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tall'}"><figure><a href="${rel}${s.src}"><img src="${rel}${s.src}" alt="${esc(s.alt)}" width="${s.width}" height="${s.height}" loading="${i ? 'lazy' : 'eager'}" decoding="async"></a><figcaption>${esc(s.caption || '')}</figcaption></figure></li>`).join('\n')}
+</ul>${a.screenshotsNote ? `<p class="muted small">${esc(a.screenshotsNote)}</p>` : ''}`
+    : `<div class="shot-placeholder" role="note"><p><strong>Screenshots coming soon.</strong><br>${esc(a.screenshotsNote || 'None are published yet.')}</p></div>`;
   const notes = Object.entries(a.platformNotes || {}).map(([p, n]) => `<li><strong>${PLATFORMS[p]}:</strong> ${esc(n)}</li>`).join('');
   const iosNote = a.platforms.includes('ios') ? '' : a.platforms.includes('web')
     ? '<li><strong>iPhone and iPad:</strong> no native iOS app yet; use the Web version in Safari.</li>' : '';
