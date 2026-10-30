@@ -1,5 +1,5 @@
 {
-  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, caption, width, height}; 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two.",
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden).",
   "apps": [
     {
       "id": "galaxy-gridiron",
@@ -9,8 +9,29 @@
       "summary": "A read-only fantasy football companion for Sleeper leagues.",
       "about": [
         "Galaxy Gridiron shows your Sleeper fantasy football leagues at a glance. Type your Sleeper username and it shows your teams across six tabs: Team, Matchup, League, Waivers, Trades and Picks. Tap any player to see his card, news and live stats during his game, or ask the chat button a question about your team.",
-        "It only looks, never touches: it can't change anything in your leagues and never asks for a password.",
-        "New in v0.0.10: tips for dropping, picking up and trading players now count backup quarterbacks correctly; a player's card shows his live points and projection while his game is on; your picks are banana yellow so they no longer look like a win; and the picks leaderboard, now called \"Picks by week\", shows the newest week first. A repeated weekly chart and the video buttons were removed."
+        "It only looks, never touches: it can't change anything in your leagues and never asks for a password."
+      ],
+      "updates": [
+        {
+          "version": "0.0.11",
+          "date": "2026-10-30",
+          "notes": [
+            "Player ranks: a player's card shows his position rank by points per game and by total season points, in a plain sentence, and says when missed games explain the difference. The chat's player card shows the same ranks.",
+            "Cleaner Matchup screen: a short result pill (\"Leading by X\", with \"Won by\" only once every game is final), +/- chips, a compact report card with the rest behind \"Details\", and shorter live card labels.",
+            "Trade questions in the chat are fixed: asking who to trade for two named players now offers deals that give exactly those players, with the trade value math shown plainly."
+          ]
+        },
+        {
+          "version": "0.0.10",
+          "date": "2026-10-28",
+          "notes": [
+            "Tips for dropping, picking up and trading players now count backup quarterbacks correctly.",
+            "A player's card shows his live points, projection and a stat breakdown while his game is on.",
+            "Your picks are banana yellow, so they no longer look like a win.",
+            "The picks leaderboard is now called \"Picks by week\" and shows the newest week first.",
+            "A repeated weekly chart and the video buttons were removed."
+          ]
+        }
       ],
       "technical": [
         "Android app built with Expo / React Native (TypeScript). The iPhone version is a web app (PWA) export that you add to your Home Screen from Safari.",
@@ -23,8 +44,9 @@
       "platformNotes": {
         "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
-      "version": "0.0.10",
-      "versionSource": "git tag v0.0.10; app/src/version.ts and app.json (expo.version)",
+      "builtWith": null,
+      "version": "0.0.11",
+      "versionSource": "git tag v0.0.11; app/app.json (expo.version)",
       "icon": {
         "src": "assets/apps/galaxy-gridiron/icon.webp",
         "alt": "Galaxy Gridiron app icon"
@@ -33,21 +55,18 @@
         {
           "src": "assets/apps/galaxy-gridiron/shot-1.webp",
           "alt": "Galaxy Gridiron launch screen: football and planet emoji over a starry purple background, an empty Sleeper username field, a Launch button, and the note that the app is read-only and needs no password.",
-          "caption": "Start screen: type a Sleeper username and launch. Read-only, no password.",
           "width": 600,
           "height": 1298
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-2.webp",
           "alt": "Tutorial card 1 of 7, Welcome to Galaxy Gridiron, explaining the six tabs (Team, Matchup, League, Waivers, Trades, Picks) and the chat button, with a Next button.",
-          "caption": "Tutorial, step 1: the six tabs and the chat button.",
           "width": 600,
           "height": 1298
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-3.webp",
           "alt": "Tutorial card 3 of 7, Picks and leaderboard, explaining weekly NFL picks, your record and chart, and the shared leaderboard, with Back and Next buttons.",
-          "caption": "Tutorial, step 3: weekly picks and the shared leaderboard.",
           "width": 600,
           "height": 1298
         }
@@ -55,8 +74,8 @@
       "screenshotsNote": "Rendered from a fresh clone of the public repo (v0.0.10 web export, no network access). Screens that need a Sleeper account are not shown.",
       "links": {
         "download": {
-          "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.10.zip",
-          "label": "Download (v0.0.10, source code .zip)"
+          "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.11.zip",
+          "label": "Download source v0.0.11"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -76,8 +95,33 @@
       "summary": "Swipe through your photos to decide what to keep and what to delete.",
       "about": [
         "Swipe Clean helps you tidy your photo library one swipe at a time: swipe left to put a photo in your Delete pile, right to keep it. Undo, combos and a daily streak keep it quick and fun.",
-        "It never deletes anything by itself and never picks photos for you. You look over your Delete pile, then remove those photos yourself with your phone's own delete prompt (or in Google Photos on the web). On the web you can try a demo with sample photos.",
-        "New in v0.0.6: Lil, the little mascot, now sits in a rounded header on every page; the swipe screen shows how many photos you've done and your minutes today; Settings lets you pick Dark, Light or Match my phone; and rapid taps on Lil no longer get stuck. v0.0.5 brought a new app icon and Lil's happy reactions, with switches to hide Lil or calm things down, and it follows your phone's setting for fewer animations."
+        "It never deletes anything by itself and never picks photos for you. You look over your Delete pile, then remove those photos yourself with your phone's own delete prompt (or in Google Photos on the web). On the web you can try a demo with sample photos."
+      ],
+      "updates": [
+        {
+          "version": "0.0.6",
+          "date": "2026-10-27",
+          "notes": [
+            "Lil sits in the middle of the top bar on every screen, with room to hop and throw hearts, so Lil is never cut off (this also fixes Lil being clipped on Home).",
+            "The top bar has a soft rounded dip under Lil, in both themes. With \"Show Lil\" off, the edge is simply flat.",
+            "Bigger header labels and numbers, with more space from the side buttons. Still fits narrow phones.",
+            "Swipe screen top bar, left to right: Back, Photos (done/total), Lil, Minutes (today/goal), Pile. The deck date is now a small line under the progress bar.",
+            "Other screens use the same top bar, with a stat on each side.",
+            "Tapping Lil over and over always gets a fresh reaction; two small timing bugs are fixed.",
+            "New Settings > Appearance: Dark (default), Light (a warm cream look), or Match my phone.",
+            "Photos and videos always open on a dark background, even in Light mode."
+          ]
+        },
+        {
+          "version": "0.0.5",
+          "date": "2026-10-27",
+          "notes": [
+            "New app icon: Lil holding a polaroid with two little hearts, next to a small light grey bin. Supports Android themed icons.",
+            "Meet Lil Guy, the mascot, who reacts to every choice with an equally happy reaction, so no choice is cheered more than another. Tap Lil for a reaction.",
+            "Idle poses: leave the screen alone for a few seconds and Lil briefly turns into a camera, film roll, polaroid peek, camera strap or photo frame.",
+            "Settings > Lil Guy: \"Show Lil\" and \"Calm mode\". Lil also stays still if Android's \"Remove animations\" is on."
+          ]
+        }
       ],
       "technical": [
         "Android app built with Expo / React Native, with a small Kotlin module that talks to MediaStore and uses the system trash and delete dialogs.",
@@ -90,6 +134,7 @@
       "platformNotes": {
         "web": "A browser demo with sample photos; connecting Google Photos needs extra setup."
       },
+      "builtWith": "Grok Bot from Cursor",
       "version": "0.0.6",
       "versionSource": "git tag v0.0.6; android/app/src/version.ts and app.json (expo.version)",
       "icon": {
@@ -99,38 +144,34 @@
       "screenshots": [
         {
           "src": "assets/apps/swipe-clean/shot-1.webp",
-          "alt": "Swipe Clean web demo home screen: the heading Sort your photos, one swipe at a time, a note that the app never deletes anything, a Pick photos from Google Photos button and a Try the demo button with 60 fake photos.",
-          "caption": "Web demo home: connect Google Photos or try the demo.",
+          "alt": "Swipe Clean home screen in light mode: Lil the mascot at the top, an On this day card showing placeholder photos from 2025, 2024 and 2023 with a Sort all 6 from this day button, a 34% reviewed progress ring with today's 14 of 15 minutes, and phone storage with 215 MB cleared.",
           "width": 600,
-          "height": 1298
+          "height": 1333
         },
         {
           "src": "assets/apps/swipe-clean/shot-2.webp",
-          "alt": "Swipe screen in the demo: a placeholder landscape illustration with its file name and date, progress 8 of 60, Delete pile 4, Could free 14.5 MB, Kept 4, and round Delete, Undo and Keep buttons.",
-          "caption": "Swiping: left adds to the Delete pile, right keeps. Placeholder demo photos.",
+          "alt": "Swipe screen in light mode: Photos 3 of 9 and Minutes 14 of 15 in the top bar around Lil, a placeholder photo of a sailboat on the sea dated Oct 27, 2024, and buttons for Remove pile, Decide later, Undo, Share and Keep on phone.",
           "width": 600,
-          "height": 1298
+          "height": 1333
         },
         {
           "src": "assets/apps/swipe-clean/shot-3.webp",
-          "alt": "Nice work summary with confetti: 8 sorted, 14.5 MB you could free, 4 in Delete pile, 4 kept, best combo 8, 0.4 seconds per photo, and buttons to review the Delete pile or keep sorting.",
-          "caption": "Session summary with your stats.",
+          "alt": "Swipe screen in dark mode with Lil reacting with little hearts above the same placeholder sailboat photo, and the round swipe buttons below.",
           "width": 600,
-          "height": 1298
+          "height": 1333
         },
         {
           "src": "assets/apps/swipe-clean/shot-4.webp",
-          "alt": "Your Delete pile with 4 placeholder images (a line sketch, two cartoon cats and a sunset) each with a keep button, and a button that shows how to delete them yourself.",
-          "caption": "Review the Delete pile before deleting anything yourself.",
+          "alt": "Stats screen in dark mode: 215 MB moved to trash or deleted in total, a note that Android empties its trash after about 30 days, today, this week and this month totals, and a bar chart of the last 30 days.",
           "width": 600,
-          "height": 1298
+          "height": 1333
         }
       ],
-      "screenshotsNote": "Rendered from the web demo in a fresh clone of the public repo, using its generated placeholder photos. The Android app looks different.",
+      "screenshotsNote": "Android app v0.0.6 rendered in a browser preview at phone size, with placeholder images only.",
       "links": {
         "download": {
           "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip",
-          "label": "Download (v0.0.6, source code .zip)"
+          "label": "Download source v0.0.6"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -138,8 +179,7 @@
       },
       "vettedForks": [],
       "todo": [
-        "No GitHub release with an APK asset yet; only a source download is linked.",
-        "Add Android screenshots rendered with placeholder photos."
+        "No GitHub release with an APK asset yet; only a source download is linked."
       ]
     },
     {
@@ -150,8 +190,26 @@
       "summary": "A shared to-do board for two people that keeps working offline, with a TV mode.",
       "about": [
         "Kanban Board is a shared to-do board for two people. Cards move through Ideas, To Do, Doing and Done, and each card can have a priority, an owner, tags, a due date and a checklist.",
-        "Everyone sees the same board: when someone adds, edits, moves or deletes a card, every open phone, computer and TV updates within about a second. If the connection drops, you can keep working and your changes catch up by themselves.",
-        "New in v0.02: each device asks once \"Who are you?\" (no passwords); a status dot shows Live, Reconnecting or Offline; a TV mode shows big text and a clock for a wall screen; and backups are kept automatically. If two people change the same card while offline, the most recent change wins, and a deleted card stays deleted."
+        "Everyone sees the same board: when someone adds, edits, moves or deletes a card, every open phone, computer and TV updates within about a second. If the connection drops, you can keep working and your changes catch up by themselves."
+      ],
+      "updates": [
+        {
+          "version": "0.02",
+          "notes": [
+            "A small self-hosted server (for example on a Raspberry Pi) stores the board in one file and sends live updates: every open phone, computer and TV shows the same cards within about a second.",
+            "Keeps working through connection hiccups; your changes catch up by themselves. A status dot shows Live, Reconnecting or Offline.",
+            "Each device asks once \"Who are you?\" (no passwords), using generic owner names.",
+            "Full-screen TV mode with big text and a clock, plus install scripts.",
+            "Backups are kept automatically. If two people change the same card while offline, the most recent change wins, and a deleted card stays deleted."
+          ]
+        },
+        {
+          "version": "0.01",
+          "notes": [
+            "First version: a single-file Kanban board in the browser with Backlog, To Do, Doing and Done columns, due dates, priorities, tags, checklists and an owner field.",
+            "Saved on your device, with JSON export and import."
+          ]
+        }
       ],
       "technical": [
         "A tiny Node.js server with no dependencies holds the one real copy of the board and pushes live updates to every open page. It keeps rolling backups (the last 30 versions, at most one every 5 minutes). Requires Node.js 18 or newer.",
@@ -163,6 +221,7 @@
       "platformNotes": {
         "web": "Runs in any browser; someone sets it up once on a small always-on computer."
       },
+      "builtWith": "Grok Bot from Cursor",
       "version": "0.02",
       "versionSource": "v0.02/ folder and APP_VERSION in v0.02/public/index.html (no git tags)",
       "icon": {
@@ -173,21 +232,18 @@
         {
           "src": "assets/apps/kanban-board/shot-1.webp",
           "alt": "Kanban Board on a desktop browser with four columns, Ideas, To Do, Doing and Done, holding demo cards such as Plan a stargazing night and Paint the hallway, with priority, owner (Kida, Micah or Both) and tag chips, and a banner showing one card due today.",
-          "caption": "Desktop: four columns, owners, tags and a due-today banner. Demo board for Kida and Micah.",
           "width": 1280,
           "height": 800
         },
         {
           "src": "assets/apps/kanban-board/shot-2.webp",
           "alt": "Kanban Board on a phone: the search and filter bar, the Kida name chip, a Live status dot, the due-today banner and the Ideas column with three demo cards.",
-          "caption": "Phone: the same live board, with the Who are you chip and Live status.",
           "width": 600,
           "height": 1298
         },
         {
           "src": "assets/apps/kanban-board/shot-3.webp",
           "alt": "TV mode on a dark screen: the same four columns in large text with a clock and a Live status dot, and no buttons.",
-          "caption": "TV mode (?tv=1) for a wall display.",
           "width": 1280,
           "height": 720
         }
@@ -196,7 +252,7 @@
       "links": {
         "download": {
           "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip",
-          "label": "Download (source code .zip)"
+          "label": "Download source"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -219,6 +275,27 @@
         "Add it to your phone's home screen like an app and share one log between phones. It keeps working when you're offline.",
         "Built for cats, with a litter box log and cat wording, but the entries are simple, so it can be adapted to other animals."
       ],
+      "updates": [
+        {
+          "version": "0.0.2",
+          "date": "2026-10-20",
+          "notes": [
+            "Optional notes on pet profiles.",
+            "Upcoming appointments: add, edit or cancel them from a pet's page; they show on the home screen, and \"Mark done\" turns one into a vet-visit log entry.",
+            "Privacy hardening: the app asks search engines not to index it and doesn't send referrer information."
+          ]
+        },
+        {
+          "version": "0.0.1",
+          "date": "2026-10-20",
+          "notes": [
+            "First release: a phone-friendly shared pet health log with a simple name picker and no logins.",
+            "Pet profiles and quick logs for weight, food, water, litter box, behavior, symptoms, meds given and vet visits, with a weight chart.",
+            "Symptom entries are flagged \"check with your vet\"; the app gives no medical advice.",
+            "Works offline, can be added to your home screen, and syncs between phones within seconds."
+          ]
+        }
+      ],
       "technical": [
         "A single-page web app (PWA) that installs on phones and caches data offline in the browser.",
         "Syncs between phones through a here.now Site Data collection that you set up with your own config. Cats are added in the app; no data lives in the repo."
@@ -229,8 +306,9 @@
       "platformNotes": {
         "web": "Add it to your phone's home screen; sharing between phones needs a one-time setup."
       },
-      "version": "Unknown",
-      "versionSource": "No tags, releases or version string in the repo.",
+      "builtWith": "Grok Bot from Cursor",
+      "version": "0.0.2",
+      "versionSource": "git tag v0.0.2 (master 5d80597)",
       "icon": {
         "src": "assets/apps/cat-health-dashboard/icon.webp",
         "alt": "Cat Health Dashboard app icon"
@@ -238,40 +316,35 @@
       "screenshots": [
         {
           "src": "assets/apps/cat-health-dashboard/shot-1.webp",
-          "alt": "Cat Health Dashboard home on a phone: an Upcoming card with a dental check for Juniper, and two demo cats, Biscuit (5 years, male, 10.7 lb) and Juniper (about 6 years, 13.1 lb, flagged symptom this week), with an Add a cat button.",
-          "caption": "Home: upcoming appointments and each cat at a glance. Fictional cats Biscuit and Juniper.",
+          "alt": "Cat Health Dashboard home on a phone: an Upcoming card with a dental check for Juniper, and two demo cats, Biscuit (5 years, male, 10.7 lb, last fed 4 hours ago) and Juniper (about 6 years, 13.1 lb, flagged symptom this week), with an Add a cat button.",
           "width": 600,
           "height": 1298
         },
         {
           "src": "assets/apps/cat-health-dashboard/shot-2.webp",
-          "alt": "Biscuit's page: profile line, an Upcoming section with an Add appointment button, eight log buttons (Weight, Food, Water, Litter box, Behavior, Symptom, Meds given, Vet visit) and the start of a weight chart.",
-          "caption": "One cat's page: quick log buttons and appointments.",
+          "alt": "Biscuit's page: profile line, an Upcoming section with an Add appointment button, eight log buttons (Weight, Food, Water, Litter box, Behavior, Symptom, Meds given, Vet visit) and a weight chart.",
           "width": 600,
           "height": 1298
         },
         {
           "src": "assets/apps/cat-health-dashboard/shot-3.webp",
-          "alt": "Biscuit's weight chart from early September to late October rising from about 10.2 to 10.7 pounds, then recent entries for food, water, behavior and meds, each logged by Kida or Micah.",
-          "caption": "Weight chart and recent entries, logged by Kida and Micah.",
+          "alt": "Biscuit's weight chart from early September to late October rising from about 10.2 to 10.7 pounds, then recent entries for food, water, behavior, meds and weight with their dates.",
           "width": 600,
           "height": 1298
         }
       ],
-      "screenshotsNote": "Rendered from a fresh clone of the public repo with placeholder config, its local mock sync server, and fictional demo data.",
+      "screenshotsNote": "Rendered from a fresh clone of the public repo with placeholder config, its local mock sync server, and fictional demo data for one owner.",
       "links": {
         "download": {
-          "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/heads/master.zip",
-          "label": "Download (source code .zip)"
+          "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/tags/v0.0.2.zip",
+          "label": "Download source v0.0.2"
         },
         "githubRelease": null,
         "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": [
-        "TODO: version is unknown; add a tag or version string to the repo."
-      ]
+      "todo": []
     }
   ]
 }

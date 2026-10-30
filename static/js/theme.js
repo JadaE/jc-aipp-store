@@ -12,4 +12,8 @@
   if(!btn)return;
   btn.hidden=false;
   btn.addEventListener('click',function(){set(root.getAttribute('data-theme')!=='light',true)});
+  // Re-sync when a page comes back from the back/forward cache or another tab changes the choice.
+  function sync(){var v=null;try{v=localStorage.getItem(KEY)}catch(e){}set(v==='light',false)}
+  window.addEventListener('pageshow',function(e){if(e.persisted)sync()});
+  window.addEventListener('storage',function(e){if(e.key===KEY)sync()});
 })();
