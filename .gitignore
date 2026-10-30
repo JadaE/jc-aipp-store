@@ -1,0 +1,9 @@
+# local secrets / publish settings (never commit)
+config.local.json
+.herenow/
+.env
+# build output and tooling
+dist/
+node_modules/
+*.log
+.DS_Store
