@@ -2,6 +2,9 @@
 config.local.json
 .herenow/
 .env
+# signing keys
+keys/
+*.keystore
 # build output and tooling
 dist/
 node_modules/

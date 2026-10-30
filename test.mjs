@@ -105,6 +105,13 @@ for (const f of files) {
   for (const [re, name] of patterns) if (re.test(txt)) { hits++; fail(`${path.relative(root, f)}: looks like a ${name}`); }
   for (const v of localValues) if (txt.includes(v)) { hits++; fail(`${path.relative(root, f)}: contains a config.local.json value`); }
 }
+// Owner name must not appear in site copy, except inside the GitHub handle used in repo URLs.
+const ownerName = ['J', 'a', 'd', 'a'].join('');
+const handle = new RegExp(`${owner}`, 'g');
+for (const f of files) {
+  const txt = fs.readFileSync(f, 'utf8').replace(handle, '');
+  if (new RegExp(ownerName, 'i').test(txt)) { hits++; fail(`${path.relative(root, f)}: mentions the owner's name outside ${owner} GitHub URLs`); }
+}
 if (!hits) ok(`${files.length} files clean${localValues.length ? ` (also checked ${localValues.length} config.local.json values)` : ' (no config.local.json present)'}`);
 
 // 4. HTML validation

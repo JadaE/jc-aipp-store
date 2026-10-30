@@ -1,6 +1,6 @@
 # JC AiPP Store Lite
 
-A small static app store for Jada's own open-source apps.
+A small static app store for open-source apps.
 
 - `data/apps.json` – the single source of truth for every app (add new apps here).
 - `data/site.json` – site-wide settings (title, canonical base URL placeholder).
