@@ -1,6 +1,7 @@
 // Build dist/ from data/apps.json + data/site.json + static/. No dependencies.
 import fs from 'node:fs';
 import path from 'node:path';
+import { resolveSiteUrl } from './siteurl.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
 const out = path.join(root, 'dist');
@@ -10,9 +11,18 @@ const { apps } = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), '
 const PLATFORMS = { android: 'Android', ios: 'iOS', windows: 'Windows', macos: 'macOS', web: 'Web' };
 const FILTERS = ['all', 'android', 'ios', 'windows', 'macos', 'web'];
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const base = site.baseUrl.replace(/\/$/, '');
+const { url: base, source: siteUrlSource } = resolveSiteUrl(root, site);
 const repoUrl = (a) => `https://github.com/${site.githubOwner}/${a.repo}`;
 const known = (v) => v && v !== 'Unknown';
+
+// Header brand: swappable logo (dark + light variant) and a separate "Lite" label.
+function logo(rel) {
+  const L = site.logo;
+  const word = site.name.replace(/\s*Lite$/, '');
+  const alt = L.includesWordmark ? esc(L.alt) : '';
+  const img = (src, cls) => `<img class="logo ${cls}" src="${rel}${src}" alt="${alt}" width="${L.width}" height="${L.height}">`;
+  return `${img(L.dark, 'logo-dark')}${img(L.light, 'logo-light')}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
+}
 
 function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
   const canonical = `${base}/${canonicalPath}`;
@@ -21,9 +31,9 @@ function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.getItem("aipp-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<!-- TODO: canonical base URL is a placeholder until a public domain is approved (data/site.json). -->
 <link rel="canonical" href="${esc(canonical)}">
 <meta name="theme-color" content="#0a0e24">
 <meta property="og:type" content="website">
@@ -44,14 +54,17 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header"><div class="wrap">
-  <a class="brand" href="${rel}index.html"><img src="${rel}favicon.svg" alt="" width="28" height="28">${esc(site.name)}</a>
+  <a class="brand" href="${rel}index.html">${logo(rel)}</a>
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" hidden><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><span>Light mode</span></button>
 </div></header>
 <main id="main" class="wrap" tabindex="-1">
 ${body}
 </main>
 <footer class="site-footer"><div class="wrap">
-  <p>Every app here is open source on <a href="https://github.com/${site.githubOwner}">GitHub</a>. Fork one and make it yours, or point your agent at the repo.</p>
+  <p>${esc(site.footer)} <a href="https://github.com/${site.githubOwner}">Browse the repos on GitHub</a>.</p>
+  <p class="fineprint">${esc(site.name)} v${esc(site.version)}</p>
 </div></footer>
+<script src="${rel}js/theme.js" defer></script>
 ${scripts}</body>
 </html>
 `;
@@ -69,14 +82,14 @@ const cards = apps.map((a) => `  <li class="card" data-platforms="${a.platforms.
   </li>`).join('\n');
 
 const home = page({
-  title: `${site.name}: open-source apps you can use or fork`,
+  title: `${site.name}: download or fork open-source apps`,
   description: site.description,
   rel: '',
   canonicalPath: '',
   jsonLd: { '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: `${base}/`, description: site.description },
   body: `<section class="hero" aria-labelledby="hero-title">
-  <h1 id="hero-title"><span>Small apps, open skies.</span></h1>
-  <p>${esc(site.tagline)} Each one lives in a public GitHub repo, so you or your agent can fork it and build from there.</p>
+  <h1 id="hero-title"><span>${esc(site.hero.title)}</span></h1>
+  <p>${esc(site.hero.lead)}</p>
 </section>
 <section aria-labelledby="apps-title">
   <h2 id="apps-title" class="visually-hidden">Apps</h2>
@@ -159,4 +172,4 @@ for (const a of apps) {
 const urls = ['', ...apps.map((a) => `apps/${a.id}/`)];
 fs.writeFileSync(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${esc(`${base}/${u}`)}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
-console.log(`built ${apps.length} app pages -> ${path.relative(process.cwd(), out) || out}`);
+console.log(`built ${apps.length} app pages -> ${path.relative(process.cwd(), out) || out} (site URL from ${siteUrlSource})`);

@@ -3,5 +3,8 @@
     "apiKey": "YOUR_HERENOW_API_KEY (or set HERENOW_API_KEY in the environment instead)",
     "slug": "your-site-slug",
     "publishScript": "/path/to/here-now/skills/here-now/scripts/publish.sh"
+  },
+  "site": {
+    "siteUrl": "OPTIONAL: https://YOUR-SITE-SLUG.example (defaults to the here.now slug URL)"
   }
 }

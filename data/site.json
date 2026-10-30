@@ -1,9 +1,23 @@
 {
   "name": "JC AiPP Store Lite",
-  "tagline": "Small, open-source apps you can use or fork.",
-  "description": "A calm little app store for open-source apps: Android, Web and more. Every app links to its public GitHub repo so you, or your agent, can fork it.",
-  "baseUrl": "https://example.invalid",
-  "baseUrlTodo": "TODO: set the real public base URL after the release reviewer approves a domain. Used for canonical, Open Graph and sitemap URLs.",
+  "version": "0.0.2",
+  "siteUrl": "https://example.invalid",
+  "siteUrlNote": "Placeholder. The real site URL is read at build time from config.local.json (site.siteUrl, or herenow.slug) or the SITE_URL env var, so it never lives in the repo.",
+  "description": "Download open-source apps the easy way, like any app store, or fork them on GitHub if you're tech-savvy or have an AI agent. Android, Web and more.",
+  "hero": {
+    "title": "Find an app. Download it, or make it yours.",
+    "lead": "Download apps the easy way, just like any app store. Tech-savvy, or working with an AI agent? Fork any app on GitHub and build your own version. Everything here is open source."
+  },
+  "footer": "Download apps the easy way, or fork any of them on GitHub if you're tech-savvy or have an AI agent.",
+  "logo": {
+    "dark": "assets/logo.svg",
+    "light": "assets/logo-light.svg",
+    "alt": "JC AiPP Store",
+    "width": 28,
+    "height": 28,
+    "includesWordmark": false,
+    "note": "Swap in the designer's logo by replacing assets/logo.svg (dark theme) and assets/logo-light.svg (light theme). Set includesWordmark to true when the logo artwork contains the 'JC AiPP Store' text, so the HTML text is hidden. 'Lite' is always rendered separately as text, and width/height should match the new artwork."
+  },
   "githubOwner": "JadaE",
   "lang": "en"
 }
