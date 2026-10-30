@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 // Build dist/ from data/apps.json + data/site.json + static/. No dependencies.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,12 +17,16 @@ const repoUrl = (a) => `https://github.com/${site.githubOwner}/${a.repo}`;
 const known = (v) => v && v !== 'Unknown';
 
 // Header brand: swappable logo (dark + light variant) and a separate "Lite" label.
+// Cache-busting: asset URLs carry a short content hash, so phones never pair new HTML with stale CSS/JS.
+const assetHash = (f) => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'static', f))).digest('hex').slice(0, 10);
+const asset = (rel, f) => `${rel}${f}?v=${assetHash(f)}`;
+
 function logo(rel) {
   const L = site.logo;
   const word = site.name.replace(/\s*Lite$/, '');
   const alt = L.includesWordmark ? esc(L.alt) : '';
   const img = (src, cls) => `<img class="logo ${cls}" src="${rel}${src}" alt="${alt}" width="${L.width}" height="${L.height}">`;
-  return `${img(L.dark, 'logo-dark')}${img(L.light, 'logo-light')}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
+  return `${img(L.dark, 'logo-mark')}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
 }
 
 function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
@@ -49,13 +54,13 @@ function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 
 <link rel="icon" href="${rel}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="${rel}favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="${rel}apple-touch-icon.png">
-<link rel="stylesheet" href="${rel}css/style.css">
+<link rel="stylesheet" href="${asset(rel, 'css/style.css')}">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>\n` : ''}</head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="${rel}index.html">${logo(rel)}</a>
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" hidden><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><span>Light mode</span></button>
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Light mode" title="Light mode" hidden><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></button>
 </div></header>
 <main id="main" class="wrap" tabindex="-1">
 ${body}
@@ -64,7 +69,7 @@ ${body}
   <p>${esc(site.footer)} <a href="https://github.com/${site.githubOwner}">Browse the repos on GitHub</a>.</p>
   <p class="fineprint">${esc(site.name)} v${esc(site.version)}</p>
 </div></footer>
-<script src="${rel}js/theme.js" defer></script>
+<script src="${asset(rel, 'js/theme.js')}" defer></script>
 ${scripts}</body>
 </html>
 `;
@@ -82,7 +87,7 @@ const cards = apps.map((a) => `  <li class="card" data-platforms="${a.platforms.
   </li>`).join('\n');
 
 const home = page({
-  title: `${site.name}: download or fork open-source apps`,
+  title: `${site.name}: apps for everyday things`,
   description: site.description,
   rel: '',
   canonicalPath: '',
@@ -101,7 +106,7 @@ ${FILTERS.map((p) => `    <button type="button" class="chip" data-platform="${p}
 ${cards}
   </ul>
 </section>`,
-  scripts: `<script src="js/filter.js" defer></script>\n`,
+  scripts: `<script src="${asset('', 'js/filter.js')}" defer></script>\n`,
 });
 
 // ---- app pages
@@ -110,12 +115,15 @@ function appPage(a) {
   const repo = repoUrl(a);
   const dl = a.links && a.links.download;
   // Accessible gallery: a keyboard-scrollable list of figures; each image links to its full-size file.
+  // Gallery: keyboard-focusable, horizontally scrolling list; alt text only, no captions or how-to text.
   const shots = a.screenshots.length
-    ? `<p class="shots-hint" id="shots-hint-${a.id}">${a.screenshots.length} screenshots. Scroll sideways (or focus the gallery and use the arrow keys); select a screenshot to open it full size.</p>
-<ul class="gallery" tabindex="0" aria-label="${esc(a.name)} screenshots" aria-describedby="shots-hint-${a.id}">
-${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tall'}"><figure><a href="${rel}${s.src}"><img src="${rel}${s.src}" alt="${esc(s.alt)}" width="${s.width}" height="${s.height}" loading="${i ? 'lazy' : 'eager'}" decoding="async"></a><figcaption>${esc(s.caption || '')}</figcaption></figure></li>`).join('\n')}
-</ul>${a.screenshotsNote ? `<p class="muted small">${esc(a.screenshotsNote)}</p>` : ''}`
-    : `<div class="shot-placeholder" role="note"><p><strong>Screenshots coming soon.</strong><br>${esc(a.screenshotsNote || 'None are published yet.')}</p></div>`;
+    ? `<ul class="gallery" tabindex="0" aria-label="${esc(a.name)} screenshots">
+${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tall'}"><a href="${rel}${s.src}"><img src="${rel}${s.src}" alt="${esc(s.alt)}" width="${s.width}" height="${s.height}" loading="${i ? 'lazy' : 'eager'}" decoding="async"></a></li>`).join('\n')}
+</ul>`
+    : `<div class="shot-placeholder" role="note"><p><strong>Screenshots coming soon.</strong></p></div>`;
+  const updates = a.updates.length
+    ? a.updates.map((u) => `<h3>Version ${esc(u.version)}${u.date ? ` <span class="upd-date">(<time datetime="${u.date}">${new Date(u.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time>)</span>` : ''}</h3><ul>${u.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`).join('')
+    : '<p>No release notes published yet.</p>';
   const notes = Object.entries(a.platformNotes || {}).map(([p, n]) => `<li><strong>${PLATFORMS[p]}:</strong> ${esc(n)}</li>`).join('');
   const iosNote = a.platforms.includes('ios') ? '' : a.platforms.includes('web')
     ? '<li><strong>iPhone and iPad:</strong> no native iOS app yet; use the Web version in Safari.</li>' : '';
@@ -142,15 +150,15 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
   <div><h1 id="app-title">${esc(a.name)}</h1><p>${esc(a.summary)}</p></div>
 </section>
 <div class="actions" role="group" aria-label="Get ${esc(a.name)}">
-  ${dl ? `<a class="btn action" href="${esc(dl.url)}">${dlIcon}${esc(dl.label)}</a>` : ''}
-  <a class="btn action" href="${repo}/fork">${gh}Fork on GitHub</a>
+  ${dl ? `<a class="btn action dl" href="${esc(dl.url)}">${dlIcon}${esc(dl.label)}</a>` : ''}
+  <a class="btn action fork" href="${repo}/fork">${gh}Fork on GitHub</a>
   ${a.links.iosAppStore ? `<a class="btn action" href="${esc(a.links.iosAppStore)}">App Store</a>` : ''}
 </div>
-<p class="actions-hint">${esc(site.downloadHint)}</p>
 <div class="app-layout">
   <div>
     <section class="panel" aria-labelledby="shots-title"><h2 id="shots-title">Screenshots</h2>${shots}</section>
     <section class="panel" aria-labelledby="about-title" data-section="about"><h2 id="about-title">About</h2>${a.about.map((p) => `<p>${esc(p)}</p>`).join('')}</section>
+    <section class="panel updates" aria-labelledby="updates-title" data-section="updates"><h2 id="updates-title">Updates</h2>${updates}</section>
     <section class="panel soon" aria-labelledby="forks-title"><h2 id="forks-title">Vetted forks</h2><p>Vetted forks coming soon. Forks that pass review will be listed here.</p></section>
   </div>
   <aside class="panel" aria-labelledby="facts-title">
@@ -158,6 +166,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
     <dl class="facts">
       <dt>Version</dt><dd>${known(a.version) ? esc(a.version) : 'Unknown'}</dd>
       <dt>Platforms</dt><dd><span class="meta">${badges(a)}</span></dd>
+      ${a.builtWith ? `<dt>Built with</dt><dd>${esc(a.builtWith)}</dd>` : ''}
       <dt>Source</dt><dd><a href="${repo}">${site.githubOwner}/${esc(a.repo)}</a></dd>
     </dl>
     ${notes || iosNote ? `<ul class="notes">${notes}${iosNote}</ul>` : ''}

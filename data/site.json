@@ -1,24 +1,22 @@
 {
   "name": "JC AiPP Store Lite",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "siteUrl": "https://example.invalid",
   "siteUrlNote": "Placeholder. The real site URL is read at build time from config.local.json (site.siteUrl, or herenow.slug) or the SITE_URL env var, so it never lives in the repo.",
-  "description": "Download open-source apps the easy way, like any app store, or fork them on GitHub if you're tech-savvy or have an AI agent. Android, Web and more.",
+  "description": "A small collection of apps for everyday things: fantasy football, tidier photos, a shared to-do board and a health log for your cats.",
   "hero": {
-    "title": "Find an app. Download it, or make it yours.",
-    "lead": "Download apps the easy way, just like any app store. Tech-savvy, or working with an AI agent? Fork any app on GitHub and build your own version. Everything here is open source."
+    "title": "JC AiPP Store Lite",
+    "lead": "A small collection of apps for everyday things. Have a look around."
   },
   "footer": "Download apps the easy way, or fork any of them on GitHub if you're tech-savvy or have an AI agent.",
   "logo": {
     "dark": "assets/logo.svg",
-    "light": "assets/logo-light.svg",
     "alt": "JC AiPP Store",
     "width": 28,
     "height": 28,
     "includesWordmark": false,
-    "note": "Swap in the designer's logo by replacing assets/logo.svg (dark theme) and assets/logo-light.svg (light theme). Set includesWordmark to true when the logo artwork contains the 'JC AiPP Store' text, so the HTML text is hidden. 'Lite' is always rendered separately as text, and width/height should match the new artwork."
+    "note": "One placeholder mark (static/assets/logo.svg) for both themes. Replace it with the final artwork and update width/height; set includesWordmark to true if it contains the store name."
   },
   "githubOwner": "JadaE",
-  "lang": "en",
-  "downloadHint": "Download gives you the app's source code as a .zip file; a ready-to-install version isn't offered here yet. Fork makes your own copy on GitHub that you can change (needs a free GitHub account)."
+  "lang": "en"
 }

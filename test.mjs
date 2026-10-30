@@ -26,7 +26,7 @@ section('site.json');
   if (!/^https:\/\/[a-z0-9.-]+$/.test(resolved.url)) fail('site URL must be an https origin with no path');
   else if (site.siteUrl !== 'https://example.invalid') fail('data/site.json siteUrl must stay a placeholder; the real URL comes from config.local.json or SITE_URL');
   else if (site.version !== pkg.version) fail(`site.json version ${site.version} != package.json ${pkg.version}`);
-  else if (!site.logo || !fs.existsSync(path.join(root, 'static', site.logo.dark)) || !fs.existsSync(path.join(root, 'static', site.logo.light))) fail('logo files missing');
+  else if (!site.logo || !fs.existsSync(path.join(root, 'static', site.logo.dark)) ) fail('logo files missing');
   else ok(`site URL (from ${resolved.source}), version ${site.version} and logo files OK`);
 }
 
@@ -94,14 +94,14 @@ for (const a of apps) {
     if (!fs.existsSync(path.join(dist, s.src))) fail(`${a.id}: screenshot not copied to dist: ${s.src}`);
     if (fs.statSync(f).size > 150 * 1024) fail(`${a.id}: screenshot over 150 KB: ${s.src}`);
     if (!s.alt || s.alt.trim().length < 20) fail(`${a.id}: screenshot needs descriptive alt text (20+ chars): ${s.src}`);
-    if (!s.caption) fail(`${a.id}: screenshot needs a caption: ${s.src}`);
+    if ('caption' in s) fail(`${a.id}: screenshots have no captions: ${s.src}`);
     const sz = imgSize(f);
     if (!sz || sz.w !== s.width || sz.h !== s.height) fail(`${a.id}: width/height ${s.width}x${s.height} do not match file ${sz ? sz.w + 'x' + sz.h : '?'}: ${s.src}`);
     if (!built.includes(`alt="${s.alt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"`)) fail(`${a.id}: built page lacks alt for ${s.src}`);
   }
   if (/releases\/download\//.test(built)) fail(`${a.id}: a release-asset download is rendered (must stay source-only)`);
 }
-if (failed === failedBefore) ok(`${shotCount} screenshots exist, match their sizes, and have alt text and captions`);
+if (failed === failedBefore) ok(`${shotCount} screenshots exist, match their sizes, and have alt text (no captions)`);
 
 // 1c. app page layout: Download first, equal weight with Fork, no View repo button, order, About vs Technical
 section('app page layout');
@@ -116,10 +116,14 @@ for (const a of apps) {
   if (!btns.length || !/\/archive\/|\/releases\//.test(btns[0][2])) fail(`${a.id}: Download must be the first button`);
   if (!btns[1] || !/\/fork$/.test(btns[1][2])) fail(`${a.id}: Fork must come right after Download`);
   if (btns.some((b) => b[2].endsWith('/fork') && /\bprimary\b/.test(b[1]))) fail(`${a.id}: Fork must not be the highlighted button`);
-  if (btns[0] && btns[1] && btns[0][1] !== btns[1][1]) fail(`${a.id}: Download and Fork must share the same style (equal weight)`);
-  if (!/<p class="actions-hint">[^<]{20,}<\/p>/.test(h)) fail(`${a.id}: plain download/fork hint missing`);
-  const pos = ['id="shots-title"', 'id="about-title"', 'id="facts-title"', 'id="tech-title"'].map((k) => h.indexOf(k));
-  if (pos.some((p) => p < 0) || pos.some((p, i) => i && p < pos[i - 1])) fail(`${a.id}: order must be Screenshots, About, Details, then Technical details last`);
+  if (/<figcaption|class="shots-hint"|class="actions-hint"|Scroll sideways|source code as a \.zip/i.test(h)) fail(`${a.id}: captions or usage how-to text must not appear`);
+  if (!/class="btn action dl"/.test(actions) || !/class="btn action fork"/.test(actions)) fail(`${a.id}: Download and Fork must both be colored buttons`);
+  if (!Array.isArray(a.updates) || a.updates.some((u) => !u.version || !Array.isArray(u.notes) || !u.notes.length || (u.date && !/^\d{4}-\d{2}-\d{2}$/.test(u.date)))) fail(`${a.id}: updates must be [{version, date?, notes[]}]`);
+  if (!('builtWith' in a)) fail(`${a.id}: builtWith missing (use null)`);
+  if (a.builtWith == null && /Built with/.test(h)) fail(`${a.id}: Built with must be hidden while null`);
+  if (a.about.some((x) => /^New in/i.test(x)) || /New in v/.test((h.match(/data-section="about">[\s\S]*?<\/section>/) || [''])[0])) fail(`${a.id}: release notes belong in Updates, not About`);
+  const pos = ['id="shots-title"', 'id="about-title"', 'id="updates-title"', 'id="facts-title"', 'id="tech-title"'].map((k) => h.indexOf(k));
+  if (pos.some((p) => p < 0) || pos.some((p, i) => i && p < pos[i - 1])) fail(`${a.id}: order must be Screenshots, About, Updates, Details, then Technical details last`);
   const about = (h.match(/data-section="about">[\s\S]*?<\/section>/) || [''])[0];
   const tech = (h.match(/data-section="technical">[\s\S]*?<\/section>/) || [''])[0];
   const aside = (h.match(/<aside[\s\S]*?<\/aside>/) || [''])[0];
@@ -127,7 +131,19 @@ for (const a of apps) {
   for (const t of a.technical) if (about.includes(esc(t).slice(0, 40))) fail(`${a.id}: technical text appears in About`);
   for (const t of a.about) if (tech.includes(esc(t).slice(0, 40))) fail(`${a.id}: About text appears in Technical details`);
 }
-if (failed === layoutBefore) ok('Download first and same style as Fork, no View repo button, Screenshots > About > Details > Technical, no mixing');
+if (failed === layoutBefore) ok('Download first, both buttons colored, Fork not highlighted, no View repo, no captions or how-to text, Screenshots > About > Updates > Details > Technical')
+// footer line appears exactly once per page and is not repeated elsewhere; one logo mark
+const FOOT = `${esc(site.footer)} <a href="https://github.com/${owner}">Browse the repos on GitHub</a>.`;
+const footBefore = failed;
+for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
+  const h = fs.readFileSync(path.join(dist, f), 'utf8');
+  if (h.split(FOOT).length !== 2) fail(`${f}: footer line must appear exactly once`);
+  const rest = h.replace(FOOT, '');
+  for (const ph of ['the easy way', 'tech-savvy', 'AI agent', 'fork any of them', 'Browse the repos']) if (rest.includes(ph)) fail(`${f}: footer wording "${ph}" repeated outside the footer`);
+  if ((h.match(/<img class="logo /g) || []).length !== 1) fail(`${f}: header must show exactly one logo mark`);
+  if (!/css\/style\.css\?v=[0-9a-f]{10}"/.test(h)) fail(`${f}: stylesheet URL must be cache-busted`);
+}
+if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets');
 
 // 2. links and images in the build
 section('links and images');
@@ -273,6 +289,18 @@ else {
   else if (!(focused && t3[0] === null && t3[1] === 'dark')) fail(`keyboard toggle back to dark failed (focused ${focused}, got ${t3})`);
   else ok('theme: dark by default under OS light preference; toggle works by keyboard, aria-pressed updates, choice persists across pages');
   await ctx.close();
+  for (const dev of ['iPhone 13', 'Pixel 7']) {
+    const mctx = await browser.newContext({ ...pw.devices[dev] });
+    const mp = await mctx.newPage();
+    await mp.goto(pathToFileURL(path.join(dist, 'apps', apps[0].id, 'index.html')).href);
+    const th = () => mp.evaluate(() => [document.documentElement.getAttribute('data-theme') || 'dark', getComputedStyle(document.body).color, document.querySelector('[data-theme-toggle]').getAttribute('aria-label')]);
+    const m0 = await th(); await mp.tap('[data-theme-toggle]'); const m1 = await th(); await mp.tap('[data-theme-toggle]'); const m2 = await th();
+    const size = await mp.$eval('[data-theme-toggle]', (e) => { const r = e.getBoundingClientRect(); return [r.width, r.height, e.textContent.trim()]; });
+    if (m0[0] !== 'dark' || m1[0] !== 'light' || m2[0] !== 'dark' || m0[1] === m1[1]) fail(`${dev}: tapping the toggle should switch dark -> light -> dark and change colors (got ${m0[0]}, ${m1[0]}, ${m2[0]})`);
+    else if (!m0[2] || size[2] || size[0] > 48 || size[0] < 24) fail(`${dev}: toggle must be a small icon-only button with an aria-label (got ${size})`);
+    else ok(`${dev} emulation: real taps switch dark -> light -> dark; small icon-only toggle with aria-label`);
+    await mctx.close();
+  }
   await browser.close();
 }
 
