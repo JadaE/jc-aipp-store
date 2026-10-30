@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.0.4
+- Fixed the theme switch on phones. Browsers kept old cached styles from v0.0.1 next to the new pages, which also caused the doubled logo. Styles and scripts now load with a version stamp, so this can't happen again.
+- The theme switch is now a small sun/moon icon.
+- One logo mark in the header.
+- A shorter, warmer welcome on the home page; the footer line is the only place that explains downloading and forking.
+- Download and Fork are both colored buttons of equal size, with readable text in both themes.
+- Removed usage tips and the captions under screenshots; screenshots scroll sideways.
+- New Updates section on each app page with what's new per version (Galaxy Gridiron v0.0.11 and v0.0.10, Swipe Clean v0.0.6 and v0.0.5, Kanban Board v0.02). Galaxy Gridiron now lists v0.0.11.
+- Hero line: "Apps for everyday things, all in one place. Have a look around." The meta description matches.
+- New social card image with the store name and the hero line.
+- "Built with" detail: Grok Bot from Cursor for Swipe Clean, Kanban Board and Cat Health Dashboard (Galaxy Gridiron pending, hidden).
+- Updates filled from the projects' release notes: Swipe Clean v0.0.6 and v0.0.5, Kanban Board v0.02 and v0.01, Cat Health Dashboard v0.0.2 and v0.0.1.
+- Cat Health Dashboard is now listed as v0.0.2, with the tagged source download.
+- New Swipe Clean screenshots of the Android app (placeholder images only).
+- Cat Health Dashboard screenshots retaken for a single owner (no "logged by" names).
+
 ## v0.0.3
 - App pages: Download comes first, and Download and Fork now look the same (Fork is no longer highlighted). The Download label says plainly that you get the source code as a .zip, and a short hint under the buttons explains what Download and Fork give you.
 - The "View repo" button is gone; the repo link stays under Details > Source.

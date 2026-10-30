@@ -25,13 +25,15 @@ Dark is the default. The header toggle switches to light mode and stores the cho
 a tiny inline script in `<head>` applies it before paint. Colors live in CSS variables at the top of `static/css/style.css`.
 
 ## Logo
-Replace `static/assets/logo.svg` (dark theme) and `static/assets/logo-light.svg` (light theme) with the final artwork and
-update `logo.width`/`logo.height` in `data/site.json`. Set `logo.includesWordmark` to `true` if the artwork contains the
-"JC AiPP Store" text; "Lite" is always rendered separately.
+One placeholder mark, `static/assets/logo.svg`, is used in both themes. Replace it with the final artwork and update
+`logo.width`/`logo.height` in `data/site.json`; set `logo.includesWordmark` to `true` if it contains the store name.
+CSS and JS URLs carry a content hash (`?v=`), so browsers never mix new pages with old cached styles.
 
 ## App text
 Each app in `data/apps.json` has `about` (plain language for non-technical people: what it does and why you'd want it)
-and `technical` (stack, hosting, requirements). They are never mixed: About sits under the screenshots, and Technical
+and `technical` (stack, hosting, requirements). Release notes go in `updates` ({version, date?, notes[]}, newest first,
+only from public release notes) and show in their own Updates section. `builtWith` (AI model or service) is shown in
+Details when set; it is null for now. They are never mixed: About sits under the screenshots, and Technical
 details is the last part of the Details box. `npm test` fails if words like Expo, Node.js or PWA show up in `summary`,
 `about` or `platformNotes`.
 
