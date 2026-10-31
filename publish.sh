@@ -43,7 +43,9 @@ fi
 
 # Release gate: requires Review & Release sign-off for this exact build
 VERSION=$(node -p "require('$DIR/package.json').version")
-bash /workspace/releases/tools/release-gate.sh aipp-store "$VERSION" "$DIR/dist" || exit 1
+GATE="${RELEASE_GATE_SH:-$(cfg .release.gateScript)}"
+[ -n "$GATE" ] && [ -f "$GATE" ] || { echo "No release gate (RELEASE_GATE_SH or config.local.json .release.gateScript); not publishing." >&2; exit 1; }
+bash "$GATE" aipp-store "$VERSION" "$DIR/dist" || exit 1
 
 BUILD=$(mktemp -d /tmp/aipp-store-build.XXXX)
 trap 'rm -rf "$BUILD"' EXIT

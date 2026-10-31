@@ -6,5 +6,8 @@
   },
   "site": {
     "siteUrl": "OPTIONAL: https://YOUR-SITE-SLUG.example (defaults to the here.now slug URL)"
+  },
+  "release": {
+    "gateScript": "/path/to/release-gate.sh (or set RELEASE_GATE_SH in the environment)"
   }
 }

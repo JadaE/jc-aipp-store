@@ -26,7 +26,7 @@ function logo(rel) {
   const word = site.name.replace(/\s*Lite$/, '');
   const alt = L.includesWordmark ? esc(L.alt) : '';
   const img = (src, cls) => `<img class="logo ${cls}" src="${rel}${src}" alt="${alt}" width="${L.width}" height="${L.height}">`;
-  return `${img(L.dark, 'logo-mark')}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
+  return `${img(L.dark, 'logo-mark logo-dark')}${L.light ? img(L.light, 'logo-mark logo-light') : ''}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
 }
 
 function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
@@ -51,6 +51,7 @@ function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${esc(`${base}/${ogImage}`)}">
+<link rel="icon" href="${rel}favicon.ico" sizes="any">
 <link rel="icon" href="${rel}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="${rel}favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="${rel}apple-touch-icon.png">
@@ -122,7 +123,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
 </ul>`
     : `<div class="shot-placeholder" role="note"><p><strong>Screenshots coming soon.</strong></p></div>`;
   const updates = a.updates.length
-    ? a.updates.map((u) => `<h3>Version ${esc(u.version)}${u.date ? ` <span class="upd-date">(<time datetime="${u.date}">${new Date(u.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time>)</span>` : ''}</h3><ul>${u.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`).join('')
+    ? a.updates.slice(0, 1).map((u) => `<h3>Version ${esc(u.version)}${u.date ? ` <span class="upd-date">(<time datetime="${u.date}">${new Date(u.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time>)</span>` : ''}</h3><ul>${u.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`).join('')
     : '<p>No release notes published yet.</p>';
   const notes = Object.entries(a.platformNotes || {}).map(([p, n]) => `<li><strong>${PLATFORMS[p]}:</strong> ${esc(n)}</li>`).join('');
   const iosNote = a.platforms.includes('ios') ? '' : a.platforms.includes('web')
