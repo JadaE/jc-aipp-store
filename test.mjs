@@ -150,6 +150,10 @@ section('logo');
   }
   if (failed === lb) ok('Designer mark in header, favicons and manifest; old star absent; all icon URLs cache-busted');
 }
+// home meta/og/twitter descriptions: general wording only
+{ const h = fs.readFileSync(path.join(dist, 'index.html'), 'utf8'); const want = 'Apps for everyday things, all in one place.';
+  for (const sel of ['name="description"', 'property="og:description"', 'name="twitter:description"']) { const m = h.match(new RegExp(`<meta ${sel} content="([^"]*)"`)); if (m && m[1] !== want) fail(`index.html: ${sel} must be "${want}"`); }
+  ok('home descriptions use the general wording'); }
 // footer line appears exactly once per page and is not repeated elsewhere; one logo mark
 const FOOT = `${esc(site.footer)} <a href="https://github.com/${owner}">Browse the repos on GitHub</a>.`;
 const footBefore = failed;
