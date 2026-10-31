@@ -1,6 +1,6 @@
 {
   "name": "JC AiPP Store Lite",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "siteUrl": "https://example.invalid",
   "siteUrlNote": "Placeholder. The real site URL is read at build time from config.local.json (site.siteUrl, or herenow.slug) or the SITE_URL env var, so it never lives in the repo.",
   "description": "Apps for everyday things, all in one place: fantasy football, tidier photos, a shared to-do board and a health log for your cats.",

@@ -72,7 +72,7 @@
           "height": 1830
         }
       ],
-      "screenshotsNote": "Rendered from a fresh clone of the public repo (v0.0.10 web export, no network access). Screens that need a Sleeper account are not shown.",
+      "screenshotsNote": "Galaxy Gridiron v0.0.11 from a real league, with all league, team and manager names and avatars blurred: Picks leaderboard, Picks Games tab, player card, Matchup and Team.",
       "links": {
         "download": {
           "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.11.zip",
