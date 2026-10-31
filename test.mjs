@@ -199,6 +199,12 @@ for (const f of htmlFiles) {
 }
 ok(`${htmlFiles.length} pages, ${internal} internal refs, ${external} external links checked`);
 
+// 2b. no local box paths in public data
+for (const f of fs.readdirSync(path.join(root, 'data')).filter((n) => n.endsWith('.json'))) {
+  const t = fs.readFileSync(path.join(root, 'data', f), 'utf8');
+  if (/\/workspace|\/home\//.test(t)) fail(`data/${f}: contains a local path (/workspace or /home/)`);
+}
+
 // 3. secret / private URL scan
 section('secret scan (tracked + unignored files and dist/)');
 let files = [];
