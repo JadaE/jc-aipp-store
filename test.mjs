@@ -84,7 +84,7 @@ let shotCount = 0; const failedBefore = failed;
 for (const a of apps) {
   const list = a.screenshots || [];
   if (!list.length && !a.screenshotsNote) fail(`${a.id}: no screenshots and no screenshotsNote explaining why`);
-  if (list.length > 4) fail(`${a.id}: more than 4 screenshots`);
+  if (list.length > 5) fail(`${a.id}: more than 5 screenshots`);
   const built = fs.existsSync(path.join(dist, 'apps', a.id, 'index.html')) ? fs.readFileSync(path.join(dist, 'apps', a.id, 'index.html'), 'utf8') : '';
   if (list.length && !/<ul class="gallery" tabindex="0" aria-label="[^"]+"/.test(built)) fail(`${a.id}: gallery not rendered accessibly`);
   for (const s of list) {

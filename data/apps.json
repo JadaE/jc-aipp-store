@@ -49,18 +49,24 @@
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-2.webp",
-          "alt": "Galaxy Gridiron player card: a player's points, position rank by points per game and season total, and recent news.",
+          "alt": "Galaxy Gridiron Picks tab, Games view: this week's games listed as matchups where you tap the team you think will win.",
           "width": 824,
           "height": 1830
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-3.webp",
-          "alt": "Galaxy Gridiron Matchup screen: the live score with a short result pill, +/- chips by position and a compact report card. Team names are blurred.",
+          "alt": "Galaxy Gridiron player card: a player's points, position rank by points per game and season total, and recent news.",
           "width": 824,
           "height": 1830
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-4.webp",
+          "alt": "Galaxy Gridiron Matchup screen: the live score with a short result pill, +/- chips by position and a compact report card. Team names are blurred.",
+          "width": 824,
+          "height": 1830
+        },
+        {
+          "src": "assets/apps/galaxy-gridiron/shot-5.webp",
           "alt": "Galaxy Gridiron Team tab: your starting lineup and bench with each player's projected and scored points. Team names are blurred.",
           "width": 824,
           "height": 1830
