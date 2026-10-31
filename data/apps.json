@@ -16,20 +16,9 @@
           "version": "0.0.11",
           "date": "2026-10-30",
           "notes": [
-            "Player ranks: a player's card shows his position rank by points per game and by total season points, in a plain sentence, and says when missed games explain the difference. The chat's player card shows the same ranks.",
-            "Cleaner Matchup screen: a short result pill (\"Leading by X\", with \"Won by\" only once every game is final), +/- chips, a compact report card with the rest behind \"Details\", and shorter live card labels.",
-            "Trade questions in the chat are fixed: asking who to trade for two named players now offers deals that give exactly those players, with the trade value math shown plainly."
-          ]
-        },
-        {
-          "version": "0.0.10",
-          "date": "2026-10-28",
-          "notes": [
-            "Tips for dropping, picking up and trading players now count backup quarterbacks correctly.",
-            "A player's card shows his live points, projection and a stat breakdown while his game is on.",
-            "Your picks are banana yellow, so they no longer look like a win.",
-            "The picks leaderboard is now called \"Picks by week\" and shows the newest week first.",
-            "A repeated weekly chart and the video buttons were removed."
+            "Player cards show where a player ranks at his position, by points per game and by season total, with a note when missed games explain the gap.",
+            "Cleaner Matchup screen: a short result pill (\"Leading by\" while games are on, \"Won by\" only once every game is final), +/- chips per position, and a compact report card.",
+            "Trade questions in the chat now offer deals for exactly the players you name, shown as \"You give / You get\" with plain trade-value math."
           ]
         }
       ],
@@ -44,7 +33,7 @@
       "platformNotes": {
         "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
-      "builtWith": null,
+      "builtWith": "Grok Bot from Cursor",
       "version": "0.0.11",
       "versionSource": "git tag v0.0.11; app/app.json (expo.version)",
       "icon": {
@@ -54,21 +43,33 @@
       "screenshots": [
         {
           "src": "assets/apps/galaxy-gridiron/shot-1.webp",
-          "alt": "Galaxy Gridiron launch screen: football and planet emoji over a starry purple background, an empty Sleeper username field, a Launch button, and the note that the app is read-only and needs no password.",
-          "width": 600,
-          "height": 1298
+          "alt": "Galaxy Gridiron Picks tab: the \"Picks by week\" leaderboard with each player's weekly pick results, newest week first. Names are blurred.",
+          "width": 824,
+          "height": 1830
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-2.webp",
-          "alt": "Tutorial card 1 of 7, Welcome to Galaxy Gridiron, explaining the six tabs (Team, Matchup, League, Waivers, Trades, Picks) and the chat button, with a Next button.",
-          "width": 600,
-          "height": 1298
+          "alt": "Galaxy Gridiron Picks tab, Games view: this week's games listed as matchups where you tap the team you think will win.",
+          "width": 824,
+          "height": 1830
         },
         {
           "src": "assets/apps/galaxy-gridiron/shot-3.webp",
-          "alt": "Tutorial card 3 of 7, Picks and leaderboard, explaining weekly NFL picks, your record and chart, and the shared leaderboard, with Back and Next buttons.",
-          "width": 600,
-          "height": 1298
+          "alt": "Galaxy Gridiron player card: a player's points, position rank by points per game and season total, and recent news.",
+          "width": 824,
+          "height": 1830
+        },
+        {
+          "src": "assets/apps/galaxy-gridiron/shot-4.webp",
+          "alt": "Galaxy Gridiron Matchup screen: the live score with a short result pill, +/- chips by position and a compact report card. Team names are blurred.",
+          "width": 824,
+          "height": 1830
+        },
+        {
+          "src": "assets/apps/galaxy-gridiron/shot-5.webp",
+          "alt": "Galaxy Gridiron Team tab: your starting lineup and bench with each player's projected and scored points. Team names are blurred.",
+          "width": 824,
+          "height": 1830
         }
       ],
       "screenshotsNote": "Rendered from a fresh clone of the public repo (v0.0.10 web export, no network access). Screens that need a Sleeper account are not shown.",

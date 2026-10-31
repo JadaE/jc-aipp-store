@@ -1,6 +1,6 @@
 {
   "name": "JC AiPP Store Lite",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "siteUrl": "https://example.invalid",
   "siteUrlNote": "Placeholder. The real site URL is read at build time from config.local.json (site.siteUrl, or herenow.slug) or the SITE_URL env var, so it never lives in the repo.",
   "description": "Apps for everyday things, all in one place: fantasy football, tidier photos, a shared to-do board and a health log for your cats.",
@@ -8,14 +8,15 @@
     "title": "JC AiPP Store Lite",
     "lead": "Apps for everyday things, all in one place. Have a look around."
   },
-  "footer": "Download apps the easy way, or fork any of them on GitHub if you're tech-savvy or have an AI agent.",
+  "footer": "Download apps the easy way, or fork any of them on GitHub if you're a developer or have an AI agent.",
   "logo": {
     "dark": "assets/logo.svg",
     "alt": "JC AiPP Store",
     "width": 28,
     "height": 28,
     "includesWordmark": false,
-    "note": "One placeholder mark (static/assets/logo.svg) for both themes. Replace it with the final artwork and update width/height; set includesWordmark to true if it contains the store name."
+    "note": "Designer main mark: dark variant in dark mode, light variant in light mode.",
+    "light": "assets/logo-light.svg"
   },
   "githubOwner": "JadaE",
   "lang": "en"
