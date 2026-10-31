@@ -25,7 +25,7 @@ function logo(rel) {
   const L = site.logo;
   const word = site.name.replace(/\s*Lite$/, '');
   const alt = L.includesWordmark ? esc(L.alt) : '';
-  const img = (src, cls) => `<img class="logo ${cls}" src="${rel}${src}" alt="${alt}" width="${L.width}" height="${L.height}">`;
+  const img = (src, cls) => `<img class="logo ${cls}" src="${asset(rel, src)}" alt="${alt}" width="${L.width}" height="${L.height}">`;
   return `${img(L.dark, 'logo-mark logo-dark')}${L.light ? img(L.light, 'logo-mark logo-light') : ''}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
 }
 
@@ -51,10 +51,11 @@ function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${esc(`${base}/${ogImage}`)}">
-<link rel="icon" href="${rel}favicon.ico" sizes="any">
-<link rel="icon" href="${rel}favicon.svg" type="image/svg+xml">
-<link rel="icon" href="${rel}favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="${rel}apple-touch-icon.png">
+<link rel="icon" href="${asset(rel, 'favicon.ico')}" sizes="any">
+<link rel="icon" href="${asset(rel, 'favicon.svg')}" type="image/svg+xml">
+<link rel="icon" href="${asset(rel, 'favicon-32.png')}" sizes="32x32" type="image/png">
+<link rel="manifest" href="${asset(rel, 'manifest.webmanifest')}">
+<link rel="apple-touch-icon" href="${asset(rel, 'apple-touch-icon.png')}">
 <link rel="stylesheet" href="${asset(rel, 'css/style.css')}">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>\n` : ''}</head>
 <body>
@@ -76,13 +77,14 @@ ${scripts}</body>
 `;
 }
 
+const wip = (a) => a.underConstruction ? ' <span class="wip">Under construction</span>' : '';
 const badges = (a) => a.platforms.map((p) => `<span class="badge ${p}">${PLATFORMS[p]}</span>`).join('');
 const iconImg = (a, rel, size, eager = false) =>
   `<img src="${rel}${a.icon.src}" alt="${esc(a.icon.alt)}" width="${size}" height="${size}"${eager ? '' : ' loading="lazy"'} decoding="async">`;
 
 // ---- home
 const cards = apps.map((a) => `  <li class="card" data-platforms="${a.platforms.join(' ')}">
-    <div class="card-head">${iconImg(a, '', 64)}<h2><a href="apps/${a.id}/index.html">${esc(a.name)}</a></h2></div>
+    <div class="card-head">${iconImg(a, '', 64)}<h2><a href="apps/${a.id}/index.html">${esc(a.name)}</a>${wip(a)}</h2></div>
     <p>${esc(a.summary)}</p>
     <div class="meta">${badges(a)}<span class="version">${known(a.version) ? 'v' + esc(a.version) : 'Version unknown'}</span></div>
   </li>`).join('\n');
@@ -148,7 +150,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
     body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${rel}index.html">All apps</a> <span aria-hidden="true">/</span> <span aria-current="page">${esc(a.name)}</span></nav>
 <section class="app-hero" aria-labelledby="app-title">
   ${iconImg(a, rel, 96, true)}
-  <div><h1 id="app-title">${esc(a.name)}</h1><p>${esc(a.summary)}</p></div>
+  <div><h1 id="app-title">${esc(a.name)}${wip(a)}</h1><p>${esc(a.summary)}</p><p class="author">By <a href="https://github.com/${esc(site.githubOwner)}">${esc(site.githubOwner)}</a></p></div>
 </section>
 <div class="actions" role="group" aria-label="Get ${esc(a.name)}">
   ${dl ? `<a class="btn action dl" href="${esc(dl.url)}">${dlIcon}${esc(dl.label)}</a>` : ''}
