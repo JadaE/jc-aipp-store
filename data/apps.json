@@ -346,6 +346,84 @@
       },
       "vettedForks": [],
       "todo": []
+    },
+    {
+      "id": "pantry-chef",
+      "name": "Pantry Chef",
+      "repo": "pantry-chef",
+      "category": "LifestyleApplication",
+      "underConstruction": true,
+      "summary": "Keep track of what's in your pantry and when it expires.",
+      "about": [
+        "Pantry Chef keeps track of what's in your pantry and when it expires, reading barcodes, receipts and nutrition labels right on your phone. It also suggests recipes based on what you already have.",
+        "It's an early beta, so expect rough edges and frequent updates."
+      ],
+      "technical": [
+        "Android app (sideloaded APK) built with Expo / React Native."
+      ],
+      "platforms": [
+        "android"
+      ],
+      "platformNotes": {},
+      "builtWith": "Grok Bot from Cursor",
+      "version": "0.0.6",
+      "versionSource": "/workspace/aipp-store-incoming/pantry-chef/RELEASE-NOTES.md",
+      "updates": [
+        {
+          "version": "0.0.6",
+          "notes": [
+            "Scanner: an always-visible bottom bar to add scanned items to the pantry.",
+            "Fixed a black bar that could stay at the top of the screen after scanning.",
+            "Log food: the bottom button shows its label again.",
+            "Recipes: sort options and category chips to show or hide categories.",
+            "Saved recipes moved to a star at the top right of Recipes; About moved to an info button at the top right of Pantry."
+          ]
+        }
+      ],
+      "icon": {
+        "src": "assets/apps/pantry-chef/icon.webp",
+        "alt": "Pantry Chef app icon"
+      },
+      "screenshots": [
+        {
+          "src": "assets/apps/pantry-chef/shot-1.webp",
+          "alt": "Pantry Chef Pantry screen: a list of items such as butter, chicken breast, milk and spinach, each with how much is left and when it expires.",
+          "width": 824,
+          "height": 1830
+        },
+        {
+          "src": "assets/apps/pantry-chef/shot-2.webp",
+          "alt": "Pantry Chef Recipes screen: recipe ideas ranked by how many ingredients you already have, with category chips and sort options.",
+          "width": 824,
+          "height": 1830
+        },
+        {
+          "src": "assets/apps/pantry-chef/shot-3.webp",
+          "alt": "Pantry Chef Intake screen: today's calories, sugars, sodium and saturated fat, with logged meals below.",
+          "width": 824,
+          "height": 1830
+        },
+        {
+          "src": "assets/apps/pantry-chef/shot-4.webp",
+          "alt": "Pantry Chef Log food screen: a box to type or say what you ate, and quick picks from your pantry.",
+          "width": 824,
+          "height": 1830
+        }
+      ],
+      "screenshotsNote": "Android app v0.0.6 with a single fictional user and demo pantry data.",
+      "links": {
+        "download": {
+          "url": "https://github.com/JadaE/pantry-chef/archive/refs/heads/master.zip",
+          "label": "Download source"
+        },
+        "githubRelease": null,
+        "ownDownload": null,
+        "iosAppStore": null
+      },
+      "vettedForks": [],
+      "todo": [
+        "No version tag yet; download links the master branch source."
+      ]
     }
   ]
 }
