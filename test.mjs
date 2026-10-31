@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 // Tests: data validation, internal links/images, external-link allowlist, secret scan, HTML + a11y checks.
 // Run after `node build.mjs`. Optional tools (html-validate, axe-core + playwright-core + Chrome) are skipped if missing.
 import fs from 'node:fs';
@@ -132,6 +133,27 @@ for (const a of apps) {
   for (const t of a.about) if (tech.includes(esc(t).slice(0, 40))) fail(`${a.id}: About text appears in Technical details`);
 }
 if (failed === layoutBefore) ok('Download first, both buttons colored, Fork not highlighted, no View repo, no captions or how-to text, Screenshots > About > Updates > Details > Technical')
+// logo: Designer's cross-star (elongated bottom point) everywhere; the old 4-point star tile must never return
+section('logo');
+{
+  const lb = failed;
+  const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0, 16);
+  const want = { 'assets/logo.svg': '2496c11046c14320', 'assets/logo-light.svg': '180035c158c985d3', 'favicon.svg': '2496c11046c14320' };
+  for (const [f, h] of Object.entries(want)) if (!fs.existsSync(path.join(dist, f)) || sha(path.join(dist, f)) !== h) fail(`${f}: not Designer's main mark`);
+  const OLD = /M16 4\.5 18\.6 13\.4|viewBox="0 0 32 32"><rect width="32" height="32" rx="7"/;
+  const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+  for (const f of walk(dist).filter((f) => /\.(svg|html|css|js|webmanifest)$/.test(f))) if (OLD.test(fs.readFileSync(f, 'utf8'))) fail(`${path.relative(dist, f)}: old star mark found`);
+  for (const f of walk(dist).filter((f) => f.endsWith('.html'))) {
+    const h = fs.readFileSync(f, 'utf8');
+    if (!/class="logo [^"]*logo-dark" src="[^"]*logo\.svg\?v=/.test(h) || !/class="logo [^"]*logo-light" src="[^"]*logo-light\.svg\?v=/.test(h)) fail(`${path.relative(dist, f)}: logo URLs must be cache-busted`);
+    for (const ic of ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'manifest.webmanifest']) if (!new RegExp(ic.replace('.', '\\.') + '\\?v=').test(h)) fail(`${path.relative(dist, f)}: ${ic} not cache-busted`);
+  }
+  if (failed === lb) ok('Designer mark in header, favicons and manifest; old star absent; all icon URLs cache-busted');
+}
+// home meta/og/twitter descriptions: general wording only
+{ const h = fs.readFileSync(path.join(dist, 'index.html'), 'utf8'); const want = 'Apps for everyday things, all in one place.';
+  for (const sel of ['name="description"', 'property="og:description"', 'name="twitter:description"']) { const m = h.match(new RegExp(`<meta ${sel} content="([^"]*)"`)); if (m && m[1] !== want) fail(`index.html: ${sel} must be "${want}"`); }
+  ok('home descriptions use the general wording'); }
 // footer line appears exactly once per page and is not repeated elsewhere; one logo mark
 const FOOT = `${esc(site.footer)} <a href="https://github.com/${owner}">Browse the repos on GitHub</a>.`;
 const footBefore = failed;
@@ -176,6 +198,12 @@ for (const f of htmlFiles) {
   if (/<img(?![^>]*\balt=)[^>]*>/.test(html)) fail(`${path.relative(dist, f)}: <img> without alt`);
 }
 ok(`${htmlFiles.length} pages, ${internal} internal refs, ${external} external links checked`);
+
+// 2b. no local box paths in public data
+for (const f of fs.readdirSync(path.join(root, 'data')).filter((n) => n.endsWith('.json'))) {
+  const t = fs.readFileSync(path.join(root, 'data', f), 'utf8');
+  if (/\/workspace|\/home\//.test(t)) fail(`data/${f}: contains a local path (/workspace or /home/)`);
+}
 
 // 3. secret / private URL scan
 section('secret scan (tracked + unignored files and dist/)');
