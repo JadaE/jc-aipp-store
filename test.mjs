@@ -139,8 +139,8 @@ for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
   const h = fs.readFileSync(path.join(dist, f), 'utf8');
   if (h.split(FOOT).length !== 2) fail(`${f}: footer line must appear exactly once`);
   const rest = h.replace(FOOT, '');
-  for (const ph of ['the easy way', 'tech-savvy', 'AI agent', 'fork any of them', 'Browse the repos']) if (rest.includes(ph)) fail(`${f}: footer wording "${ph}" repeated outside the footer`);
-  if ((h.match(/<img class="logo /g) || []).length !== 1) fail(`${f}: header must show exactly one logo mark`);
+  for (const ph of ['the easy way', 'a developer', 'AI agent', 'fork any of them', 'Browse the repos']) if (rest.includes(ph)) fail(`${f}: footer wording "${ph}" repeated outside the footer`);
+  if ((h.match(/<img class="logo [^"]*logo-dark/g) || []).length !== 1 || (h.match(/<img class="logo [^"]*logo-light/g) || []).length > 1 || (h.match(/<img class="logo /g) || []).length > 2) fail(`${f}: header must show exactly one logo mark per theme`);
   if (!/css\/style\.css\?v=[0-9a-f]{10}"/.test(h)) fail(`${f}: stylesheet URL must be cache-busted`);
 }
 if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets');
