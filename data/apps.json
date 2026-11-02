@@ -74,6 +74,7 @@
       ],
       "screenshotsNote": "Galaxy Gridiron v0.0.11 from a real league, with all league, team and manager names and avatars blurred: Picks leaderboard, Picks Games tab, player card, Matchup and Team.",
       "links": {
+        "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.11.zip",
           "label": "Download source v0.0.11"
@@ -170,6 +171,7 @@
       ],
       "screenshotsNote": "Android app v0.0.6 rendered in a browser preview at phone size, with placeholder images only.",
       "links": {
+        "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip",
           "label": "Download source v0.0.6"
@@ -251,6 +253,7 @@
       ],
       "screenshotsNote": "Rendered from a fresh clone of the public repo with a fictional demo board for Kida and Micah.",
       "links": {
+        "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip",
           "label": "Download source"
@@ -336,6 +339,7 @@
       ],
       "screenshotsNote": "Rendered from a fresh clone of the public repo with placeholder config, its local mock sync server, and fictional demo data for one owner.",
       "links": {
+        "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/tags/v0.0.2.zip",
           "label": "Download source v0.0.2"
@@ -412,6 +416,7 @@
       ],
       "screenshotsNote": "Android app v0.0.6 with a single fictional user and demo pantry data.",
       "links": {
+        "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/pantry-chef/archive/refs/heads/master.zip",
           "label": "Download source"
