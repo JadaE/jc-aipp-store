@@ -370,9 +370,17 @@
       ],
       "platformNotes": {},
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.6",
-      "versionSource": "No version tag yet; release notes in JadaE/pantry-chef",
+      "version": "0.0.7",
+      "versionSource": "GitHub Release v0.0.7 in JadaE/pantry-chef",
       "updates": [
+        {
+          "version": "0.0.7",
+          "date": "2026-11-02",
+          "notes": [
+            "Now downloads as a direct Android APK (sideload). Installed copies update in place.",
+            "In-app update checks now use the public GitHub releases."
+          ]
+        },
         {
           "version": "0.0.6",
           "notes": [
@@ -418,17 +426,15 @@
       "links": {
         "openWeb": null,
         "download": {
-          "url": "https://github.com/JadaE/pantry-chef/archive/refs/heads/master.zip",
-          "label": "Download source"
+          "url": "https://github.com/JadaE/pantry-chef/releases/download/v0.0.7/PantryChef-v0.0.7.apk",
+          "label": "Download APK (Android, 86.5 MB)"
         },
         "githubRelease": null,
         "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": [
-        "No version tag yet; download links the master branch source."
-      ]
+      "todo": []
     }
   ]
 }
