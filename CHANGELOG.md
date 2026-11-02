@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.0.7
+- Header: Designer's final Lite lockup (approved 4d), the dark-background version in dark mode and the light-background version in light mode, 160px wide with clear space around it. It replaces the separate star mark and the "JC AiPP Store Lite" text. Phones too narrow to fit it (under 300px) show the main tile icon instead.
+- The home page title is kept for screen readers and search but no longer shown, since the lockup right above it already says the name.
+- Favicons use Designer's small-size tile; home-screen and app icons use the main tile. Every logo and icon link, including the manifest icons and the social card, carries a version stamp.
+- New social card with the lockup on the plain dark background.
+- Ready for an Open button on web apps (links.openWeb). Nothing shows until a web address is set, and none are set yet.
+- On phones, long button labels wrap instead of running out of the button.
+
 ## v0.0.4
 - Fixed the theme switch on phones. Browsers kept old cached styles from v0.0.1 next to the new pages, which also caused the doubled logo. Styles and scripts now load with a version stamp, so this can't happen again.
 - The theme switch is now a small sun/moon icon.

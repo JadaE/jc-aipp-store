@@ -64,11 +64,24 @@ img{max-width:100%;height:auto;display:block}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .site-header{border-bottom:1px solid var(--line);backdrop-filter:blur(6px);background:var(--header)}
-.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4rem}
-.brand{display:inline-flex;align-items:center;gap:.6rem;color:var(--text);text-decoration:none;font-weight:700;letter-spacing:.01em}
-.brand .logo{width:auto;height:28px}
-.logo-light{display:none}:root[data-theme="light"] .logo-light{display:inline}:root[data-theme="light"] .logo-dark{display:none}
-.brand-lite{font-weight:500;color:var(--muted);margin-left:-.25rem}
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:36px;min-height:4rem}
+/* Lite lockup: 160px wide (USAGE minimum) with at least half the recommended clear space (36px) on every side. */
+.brand{display:inline-flex;align-items:center;padding:36px 0 36px 16px;text-decoration:none;flex:none}
+.brand .logo{display:block}
+.brand .logo-lockup{width:160px;height:auto}
+.brand .logo-tile{display:none;width:48px;height:48px}
+.logo-light{display:none!important}
+:root[data-theme="light"] .brand .logo-lockup.logo-light{display:block!important}
+:root[data-theme="light"] .brand .logo-dark{display:none!important}
+/* Too narrow for 160px + clear space + the theme toggle: use the main tile icon (48px) instead. */
+@media (max-width:299.98px){
+  .brand{padding:12px 0}
+  .brand .logo-lockup,:root[data-theme="light"] .brand .logo-lockup.logo-light{display:none!important}
+  .brand .logo-tile.logo-dark{display:block}
+  :root[data-theme="light"] .brand .logo-tile.logo-light{display:block!important}
+}
+.card-actions{position:relative;z-index:1;display:flex;gap:.75rem}
+.btn.open{background:var(--accent);color:var(--on-accent)}
 .theme-toggle{display:inline-grid;place-items:center;width:40px;height:40px;padding:0;color:var(--muted);background:transparent;border:0;border-radius:50%;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .theme-toggle[hidden]{display:none}
 @media (hover:hover){.theme-toggle:hover{color:var(--text);background:var(--chip)}}
@@ -80,7 +93,7 @@ img{max-width:100%;height:auto;display:block}
 .site-footer{margin-top:4rem;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
 .site-footer .wrap{padding-top:1.5rem;padding-bottom:2rem}
 
-.hero{padding:3rem 0 1.5rem}
+.hero{padding:1.5rem 0 1.5rem}
 .hero h1{font-size:clamp(1.9rem,4.5vw,2.9rem);line-height:1.15;margin:0 0 .6rem;letter-spacing:-.01em}
 .hero h1 span{background:var(--hero-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p{max-width:40rem;color:var(--muted);margin:0;font-size:1.08rem}
@@ -127,7 +140,9 @@ img{max-width:100%;height:auto;display:block}
 .btn.fork{background:var(--btn-fork);color:var(--on-btn-fork)}
 .btn.dl:hover,.btn.fork:hover{filter:brightness(1.08)}
 .actions{margin-bottom:1.5rem}
-@media (max-width:37.99rem){.actions{flex-wrap:nowrap}.btn.action{flex:1 1 0;min-width:0;max-width:none;padding:.6rem .7rem;font-size:.95rem;white-space:nowrap}}
+@media (max-width:37.99rem){.actions{flex-wrap:nowrap}.btn.action{flex:1 1 0;min-width:0;max-width:none;padding:.5rem .7rem;font-size:.95rem;line-height:1.2;text-align:center}}
+/* With Open as a third button, phones keep all three side by side with short visible labels (full names stay for screen readers). */
+@media (max-width:37.99rem){.actions.has-open{gap:.5rem}.has-open .btn.action{padding:.6rem .5rem;font-size:.9rem;gap:.35rem}.has-open .more{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
 .technical{margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--line)}
 .technical h3{font-size:1rem;margin:0 0 .5rem}
 .technical p{font-size:.95rem;margin:.4rem 0}
