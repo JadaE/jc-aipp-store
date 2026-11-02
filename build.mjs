@@ -22,11 +22,12 @@ const assetHash = (f) => crypto.createHash('sha256').update(fs.readFileSync(path
 const asset = (rel, f) => `${rel}${f}?v=${assetHash(f)}`;
 
 function logo(rel) {
+  // Designer's Lite lockup (includes the name, so no visible name text beside it). Only one image shows at a time:
+  // CSS picks dark/light by theme, and the 48px main tile on phones too narrow for the 160px lockup plus clear space.
   const L = site.logo;
-  const word = site.name.replace(/\s*Lite$/, '');
-  const alt = L.includesWordmark ? esc(L.alt) : '';
-  const img = (src, cls) => `<img class="logo ${cls}" src="${asset(rel, src)}" alt="${alt}" width="${L.width}" height="${L.height}">`;
-  return `${img(L.dark, 'logo-mark logo-dark')}${L.light ? img(L.light, 'logo-mark logo-light') : ''}${L.includesWordmark ? '' : `<span class="brand-word">${esc(word)}</span>`}<span class="brand-lite">Lite</span>`;
+  const img = (src, cls, w, h) => `<img class="logo ${cls}" src="${asset(rel, src)}" alt="${esc(L.alt)}" width="${w}" height="${h}">`;
+  return img(L.dark, 'logo-lockup logo-dark', L.width, L.height) + img(L.light, 'logo-lockup logo-light', L.width, L.height)
+    + img(L.tileDark, 'logo-tile logo-dark', L.tileSize, L.tileSize) + img(L.tileLight, 'logo-tile logo-light', L.tileSize, L.tileSize);
 }
 
 function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
@@ -46,11 +47,11 @@ function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}">
-<meta property="og:image" content="${esc(`${base}/${ogImage}`)}">
+<meta property="og:image" content="${esc(`${base}/${ogImage}?v=${assetHash(ogImage)}`)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
-<meta name="twitter:image" content="${esc(`${base}/${ogImage}`)}">
+<meta name="twitter:image" content="${esc(`${base}/${ogImage}?v=${assetHash(ogImage)}`)}">
 <link rel="icon" href="${asset(rel, 'favicon.ico')}" sizes="any">
 <link rel="icon" href="${asset(rel, 'favicon.svg')}" type="image/svg+xml">
 <link rel="icon" href="${asset(rel, 'favicon-32.png')}" sizes="32x32" type="image/png">
@@ -77,6 +78,9 @@ ${scripts}</body>
 `;
 }
 
+// Open: primary action for web apps once links.openWeb is set (null = nothing renders).
+const openWeb = (a) => (a.platforms.includes('web') && a.links && a.links.openWeb) || null;
+const openIcon = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"/></svg>';
 const wip = (a) => a.underConstruction ? ' <span class="wip">Under construction</span>' : '';
 const badges = (a) => a.platforms.map((p) => `<span class="badge ${p}">${PLATFORMS[p]}</span>`).join('');
 const iconImg = (a, rel, size, eager = false) =>
@@ -86,6 +90,7 @@ const iconImg = (a, rel, size, eager = false) =>
 const cards = apps.map((a) => `  <li class="card" data-platforms="${a.platforms.join(' ')}">
     <div class="card-head">${iconImg(a, '', 64)}<h2><a href="apps/${a.id}/index.html">${esc(a.name)}</a>${wip(a)}</h2></div>
     <p>${esc(a.summary)}</p>
+    ${openWeb(a) ? `<div class="card-actions"><a class="btn action open" href="${esc(openWeb(a))}">${openIcon}Open<span class="visually-hidden"> ${esc(a.name)}</span></a></div>` : ''}
     <div class="meta">${badges(a)}<span class="version">${known(a.version) ? 'v' + esc(a.version) : 'Version unknown'}</span></div>
   </li>`).join('\n');
 
@@ -96,7 +101,7 @@ const home = page({
   canonicalPath: '',
   jsonLd: { '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: `${base}/`, description: site.description },
   body: `<section class="hero" aria-labelledby="hero-title">
-  <h1 id="hero-title"><span>${esc(site.hero.title)}</span></h1>
+  <h1 id="hero-title" class="visually-hidden">${esc(site.hero.title)}</h1>
   <p>${esc(site.hero.lead)}</p>
 </section>
 <section aria-labelledby="apps-title">
@@ -152,9 +157,10 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
   ${iconImg(a, rel, 96, true)}
   <div><h1 id="app-title">${esc(a.name)}${wip(a)}</h1><p>${esc(a.summary)}</p><p class="author">By <a href="https://github.com/${esc(site.githubOwner)}">${esc(site.githubOwner)}</a></p></div>
 </section>
-<div class="actions" role="group" aria-label="Get ${esc(a.name)}">
-  ${dl ? `<a class="btn action dl" href="${esc(dl.url)}">${dlIcon}${esc(dl.label)}</a>` : ''}
-  <a class="btn action fork" href="${repo}/fork">${gh}Fork on GitHub</a>
+<div class="actions${openWeb(a) ? ' has-open' : ''}" role="group" aria-label="Get ${esc(a.name)}">
+  ${openWeb(a) ? `<a class="btn action open" href="${esc(openWeb(a))}">${openIcon}Open</a>` : ''}
+  ${dl ? `<a class="btn action dl" href="${esc(dl.url)}">${dlIcon}${/^Download /.test(dl.label) ? `<span>Download<span class="more"> ${esc(dl.label.slice(9))}</span></span>` : esc(dl.label)}</a>` : ''}
+  <a class="btn action fork" href="${repo}/fork">${gh}<span>Fork<span class="more"> on GitHub</span></span></a>
   ${a.links.iosAppStore ? `<a class="btn action" href="${esc(a.links.iosAppStore)}">App Store</a>` : ''}
 </div>
 <div class="app-layout">
@@ -183,6 +189,9 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
 fs.rmSync(out, { recursive: true, force: true });
 fs.cpSync(path.join(root, 'static'), out, { recursive: true });
 fs.writeFileSync(path.join(out, 'index.html'), home);
+{ const m = JSON.parse(fs.readFileSync(path.join(root, 'static/manifest.webmanifest'), 'utf8'));
+  m.icons = m.icons.map((i) => ({ ...i, src: `${i.src.split('?')[0]}?v=${assetHash(i.src.split('?')[0])}` }));
+  fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify(m)); }
 for (const a of apps) {
   fs.mkdirSync(path.join(out, 'apps', a.id), { recursive: true });
   fs.writeFileSync(path.join(out, 'apps', a.id, 'index.html'), appPage(a));

@@ -54,6 +54,20 @@ for (const a of apps) {
   const repoRe = new RegExp(`^https://github\\.com/${owner}/${a.repo}(/|$)`);
   if (a.links?.download && !repoRe.test(a.links.download.url)) fail(`${where}: download URL must be on its public GitHub repo (needs approval otherwise): ${a.links.download.url}`);
   if (a.links?.iosAppStore != null && !/^https:\/\/apps\.apple\.com\//.test(a.links.iosAppStore)) fail(`${where}: iosAppStore must be an apps.apple.com URL`);
+  // links.openWeb: reserved for a live web app URL. Present on every app (null until set); https only,
+  // never the store's own here.now site, never a config.local.json value. Only rendered for web apps.
+  if (!('openWeb' in (a.links || {}))) fail(`${where}: links.openWeb missing (use null)`);
+  else if (a.links.openWeb != null) {
+    const u = a.links.openWeb; let host = '';
+    try { const x = new URL(u); host = x.hostname; if (x.protocol !== 'https:') throw 0; } catch { fail(`${where}: links.openWeb must be an https URL`); }
+    const own = new URL(resolveSiteUrl(root, site).url).hostname;
+    if (host && (host === own || (/\.here\.now$/.test(own) && host.endsWith('.' + own)))) fail(`${where}: links.openWeb must not point at the store's own site`);
+    if (fs.existsSync(path.join(root, 'config.local.json'))) {
+      const vals = []; const walkV = (v) => typeof v === 'string' ? vals.push(v) : v && typeof v === 'object' && Object.values(v).forEach(walkV);
+      try { walkV(JSON.parse(fs.readFileSync(path.join(root, 'config.local.json'), 'utf8'))); } catch {}
+      if (vals.some((v) => v.length >= 4 && (u === v || u.includes(v)))) fail(`${where}: links.openWeb matches a config.local.json value`);
+    }
+  }
   for (const img of [a.icon, ...(a.screenshots || [])]) {
     if (!img?.src || !fs.existsSync(path.join(root, 'static', img.src))) fail(`${where}: image missing: ${img?.src}`);
     if (!img?.alt) fail(`${where}: image without alt: ${img?.src}`);
@@ -111,10 +125,10 @@ for (const a of apps) {
   const f = path.join(dist, 'apps', a.id, 'index.html');
   if (!fs.existsSync(f)) { fail(`${a.id}: page missing`); continue; }
   const h = fs.readFileSync(f, 'utf8');
-  const actions = (h.match(/<div class="actions"[\s\S]*?<\/div>/) || [''])[0];
-  const btns = [...actions.matchAll(/<a class="([^"]+)" href="([^"]+)"/g)];
+  const actions = (h.match(/<div class="actions[^"]*"[\s\S]*?<\/div>/) || [''])[0];
+  const btns = [...actions.matchAll(/<a class="([^"]+)" href="([^"]+)"/g)].filter((b) => !/\bopen\b/.test(b[1])); // optional Open (web apps) comes before these
   if (/View repo/i.test(h)) fail(`${a.id}: 'View repo' button must be removed`);
-  if (!btns.length || !/\/archive\/|\/releases\//.test(btns[0][2])) fail(`${a.id}: Download must be the first button`);
+  if (!btns.length || !/\/archive\/|\/releases\//.test(btns[0][2])) fail(`${a.id}: Download must be the first button (after Open, if any)`);
   if (!btns[1] || !/\/fork$/.test(btns[1][2])) fail(`${a.id}: Fork must come right after Download`);
   if (btns.some((b) => b[2].endsWith('/fork') && /\bprimary\b/.test(b[1]))) fail(`${a.id}: Fork must not be the highlighted button`);
   if (/<figcaption|class="shots-hint"|class="actions-hint"|Scroll sideways|source code as a \.zip/i.test(h)) fail(`${a.id}: captions or usage how-to text must not appear`);
@@ -133,23 +147,51 @@ for (const a of apps) {
   for (const t of a.about) if (tech.includes(esc(t).slice(0, 40))) fail(`${a.id}: About text appears in Technical details`);
 }
 if (failed === layoutBefore) ok('Download first, both buttons colored, Fork not highlighted, no View repo, no captions or how-to text, Screenshots > About > Updates > Details > Technical')
-// logo: Designer's cross-star (elongated bottom point) everywhere; the old 4-point star tile must never return
+// logo: Designer's final Lite lockup (approved 4d) in the header, alt tile for favicons, main tile for app icons.
+// Fails if the old 4-point star, the v0.0.6 28px header mark, or any un-tagged logo/icon URL returns.
 section('logo');
 {
   const lb = failed;
   const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0, 16);
-  const want = { 'assets/logo.svg': '2496c11046c14320', 'assets/logo-light.svg': '180035c158c985d3', 'favicon.svg': '2496c11046c14320' };
-  for (const [f, h] of Object.entries(want)) if (!fs.existsSync(path.join(dist, f)) || sha(path.join(dist, f)) !== h) fail(`${f}: not Designer's main mark`);
+  const want = {
+    'assets/lockup-lite-dark.svg': '157a458154429f3a', 'assets/lockup-lite-light.svg': 'c06640db4f739c9e',
+    'assets/tile-main-dark.svg': '2496c11046c14320', 'assets/tile-main-light.svg': '180035c158c985d3',
+    'favicon.svg': '420ef9014b3e2947', 'favicon.ico': '9c44d3719ab0025f', 'favicon-32.png': '97993578ddda7ef4',
+    'apple-touch-icon.png': '3771a0110ff52e0c', 'icon-192.png': '4587b08e30516e6b', 'icon-512.png': '0166f41384a466f8',
+  };
+  for (const [f, h] of Object.entries(want)) if (!fs.existsSync(path.join(dist, f)) || sha(path.join(dist, f)) !== h) fail(`${f}: not Designer's final file`);
+  for (const f of ['assets/logo.svg', 'assets/logo-light.svg']) if (fs.existsSync(path.join(dist, f))) fail(`${f}: v0.0.6 header mark must be gone`);
   const OLD = /M16 4\.5 18\.6 13\.4|viewBox="0 0 32 32"><rect width="32" height="32" rx="7"/;
   const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
   for (const f of walk(dist).filter((f) => /\.(svg|html|css|js|webmanifest)$/.test(f))) if (OLD.test(fs.readFileSync(f, 'utf8'))) fail(`${path.relative(dist, f)}: old star mark found`);
+  const LOGO_REF = /(?:src|href)="([^"]*(?:assets\/(?:lockup|tile|logo)[^"]*|favicon[^"]*|apple-touch-icon[^"]*|icon-\d+\.png[^"]*|manifest\.webmanifest[^"]*|og-image\.png[^"]*))"|content="([^"]*og-image\.png[^"]*)"/g;
   for (const f of walk(dist).filter((f) => f.endsWith('.html'))) {
-    const h = fs.readFileSync(f, 'utf8');
-    if (!/class="logo [^"]*logo-dark" src="[^"]*logo\.svg\?v=/.test(h) || !/class="logo [^"]*logo-light" src="[^"]*logo-light\.svg\?v=/.test(h)) fail(`${path.relative(dist, f)}: logo URLs must be cache-busted`);
-    for (const ic of ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'manifest.webmanifest']) if (!new RegExp(ic.replace('.', '\\.') + '\\?v=').test(h)) fail(`${path.relative(dist, f)}: ${ic} not cache-busted`);
+    const h = fs.readFileSync(f, 'utf8'), rf = path.relative(dist, f);
+    for (const m of h.matchAll(LOGO_REF)) if (!/\?v=[0-9a-f]{10}$/.test(m[1] || m[2])) fail(`${rf}: un-tagged logo/icon URL ${m[1] || m[2]}`);
+    const header = (h.match(/<header[\s\S]*?<\/header>/) || [''])[0];
+    for (const [cls, file] of [['logo-lockup logo-dark', 'lockup-lite-dark.svg'], ['logo-lockup logo-light', 'lockup-lite-light.svg'], ['logo-tile logo-dark', 'tile-main-dark.svg'], ['logo-tile logo-light', 'tile-main-light.svg']])
+      if ((header.match(new RegExp(`<img class="logo ${cls}" src="[^"]*assets/${file.replace('.', '\\.')}\\?v=[0-9a-f]{10}" alt="${esc(site.logo.alt)}"`, 'g')) || []).length !== 1) fail(`${rf}: header needs exactly one ${cls} (${file}) with alt "${site.logo.alt}"`);
+    if ((header.match(/<img /g) || []).length !== 4) fail(`${rf}: header must hold only the lockup and tile images`);
+    if (!/<a class="brand" href="[^"]*index\.html">/.test(header)) fail(`${rf}: logo must link home`);
+    if (header.replace(/<[^>]+>/g, '').includes(site.name.replace(/\s*Lite$/, ''))) fail(`${rf}: visible site name text in the header duplicates the lockup`);
   }
-  if (failed === lb) ok('Designer mark in header, favicons and manifest; old star absent; all icon URLs cache-busted');
+  const man = JSON.parse(fs.readFileSync(path.join(dist, 'manifest.webmanifest'), 'utf8'));
+  for (const i of man.icons) if (!/^icon-\d+\.png\?v=[0-9a-f]{10}$/.test(i.src)) fail(`manifest icon not tagged: ${i.src}`);
+  const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  if (!/<h1 id="hero-title" class="visually-hidden">/.test(home)) fail('home h1 should stay for SEO/screen readers but not repeat the lockup visually');
+  if (failed === lb) ok('final Lite lockup + tiles in header, alt tile favicons, main tile app icons; old marks absent; every logo/icon URL tagged');
 }
+// Open button: only for web apps with links.openWeb; first action and first on the card; nothing when null
+{ const ob = failed; const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  for (const a of apps) {
+    const h = fs.readFileSync(path.join(dist, 'apps', a.id, 'index.html'), 'utf8');
+    const card = (home.match(new RegExp(`<li class="card"[^>]*>(?:(?!</li>)[\\s\\S])*apps/${a.id}/index\\.html(?:(?!</li>)[\\s\\S])*</li>`)) || [''])[0];
+    const should = !!(a.links.openWeb && a.platforms.includes('web'));
+    const has = /class="btn action open"/.test(h), cardHas = /class="btn action open"/.test(card);
+    if (has !== should || cardHas !== should) fail(`${a.id}: Open button should ${should ? '' : 'not '}render`);
+    if (should && !/<div class="actions"[^>]*>\s*<a class="btn action open"/.test(h)) fail(`${a.id}: Open must be the first action`);
+  }
+  if (failed === ob) ok('Open button only for web apps with openWeb set, first; none rendered while null'); }
 // home meta/og/twitter descriptions: general wording only
 { const h = fs.readFileSync(path.join(dist, 'index.html'), 'utf8'); const want = 'Apps for everyday things, all in one place.';
   for (const sel of ['name="description"', 'property="og:description"', 'name="twitter:description"']) { const m = h.match(new RegExp(`<meta ${sel} content="([^"]*)"`)); if (m && m[1] !== want) fail(`index.html: ${sel} must be "${want}"`); }
@@ -162,7 +204,6 @@ for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
   if (h.split(FOOT).length !== 2) fail(`${f}: footer line must appear exactly once`);
   const rest = h.replace(FOOT, '');
   for (const ph of ['the easy way', 'a developer', 'AI agent', 'fork any of them', 'Browse the repos']) if (rest.includes(ph)) fail(`${f}: footer wording "${ph}" repeated outside the footer`);
-  if ((h.match(/<img class="logo [^"]*logo-dark/g) || []).length !== 1 || (h.match(/<img class="logo [^"]*logo-light/g) || []).length > 1 || (h.match(/<img class="logo /g) || []).length > 2) fail(`${f}: header must show exactly one logo mark per theme`);
   if (!/css\/style\.css\?v=[0-9a-f]{10}"/.test(h)) fail(`${f}: stylesheet URL must be cache-busted`);
 }
 if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets');
@@ -176,6 +217,7 @@ const allowedExternal = [
   new RegExp(`^https://github\\.com/${owner}/?$`),
   ...apps.map((a) => new RegExp(`^https://github\\.com/${owner}/${a.repo}(/(fork|releases.*|archive/refs/.+\\.zip))?$`)),
   /^https:\/\/apps\.apple\.com\//,
+  ...apps.filter((a) => a.links?.openWeb).map((a) => new RegExp(`^${a.links.openWeb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)),
 ];
 const base = resolveSiteUrl(root, site).url;
 let internal = 0, external = 0;
@@ -327,6 +369,12 @@ else {
     if (m0[0] !== 'dark' || m1[0] !== 'light' || m2[0] !== 'dark' || m0[1] === m1[1]) fail(`${dev}: tapping the toggle should switch dark -> light -> dark and change colors (got ${m0[0]}, ${m1[0]}, ${m2[0]})`);
     else if (!m0[2] || size[2] || size[0] > 48 || size[0] < 24) fail(`${dev}: toggle must be a small icon-only button with an aria-label (got ${size})`);
     else ok(`${dev} emulation: real taps switch dark -> light -> dark; small icon-only toggle with aria-label`);
+    for (const t of ['dark', 'light']) {
+      await mp.evaluate((x) => { if (x === 'light') document.documentElement.setAttribute('data-theme', 'light'); else document.documentElement.removeAttribute('data-theme'); }, t);
+      const vis = await mp.$$eval('.brand img', (els) => els.filter((e) => e.offsetParent !== null).map((e) => [e.getAttribute('src'), e.getBoundingClientRect().width, e.complete && e.naturalWidth > 0]));
+      if (vis.length !== 1 || !vis[0][0].includes(`lockup-lite-${t}.svg?v=`) || vis[0][1] < 160 || !vis[0][2]) fail(`${dev} ${t}: header should show only the ${t} Lite lockup, loaded, >=160px wide (got ${JSON.stringify(vis)})`);
+      else ok(`${dev} ${t}: header shows the ${t} Lite lockup at ${Math.round(vis[0][1])}px`);
+    }
     await mctx.close();
   }
   await browser.close();
