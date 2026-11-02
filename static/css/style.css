@@ -63,23 +63,19 @@ img{max-width:100%;height:auto;display:block}
 .wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 1.25rem}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.site-header{border-bottom:1px solid var(--line);backdrop-filter:blur(6px);background:var(--header)}
-.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:36px;min-height:4rem}
-/* Lite lockup: 160px wide (USAGE minimum) with at least half the recommended clear space (36px) on every side. */
-.brand{display:inline-flex;align-items:center;padding:36px 0 36px 16px;text-decoration:none;flex:none}
-.brand .logo{display:block}
-.brand .logo-lockup{width:160px;height:auto}
-.brand .logo-tile{display:none;width:48px;height:48px}
+.site-header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:var(--bg)}
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4rem}
+html{scroll-padding-top:5rem}
+.brand{display:inline-flex;align-items:center;gap:.6rem;color:var(--text);text-decoration:none;font-weight:700;letter-spacing:.01em}
+.brand .logo{display:block;width:28px;height:28px}
+.brand-lite{font-weight:500;color:var(--muted);margin-left:-.25rem}
 .logo-light{display:none!important}
-:root[data-theme="light"] .brand .logo-lockup.logo-light{display:block!important}
-:root[data-theme="light"] .brand .logo-dark{display:none!important}
-/* Too narrow for 160px + clear space + the theme toggle: use the main tile icon (48px) instead. */
-@media (max-width:299.98px){
-  .brand{padding:12px 0}
-  .brand .logo-lockup,:root[data-theme="light"] .brand .logo-lockup.logo-light{display:none!important}
-  .brand .logo-tile.logo-dark{display:block}
-  :root[data-theme="light"] .brand .logo-tile.logo-light{display:block!important}
-}
+:root[data-theme="light"] .logo-light{display:block!important}
+:root[data-theme="light"] .logo-dark{display:none!important}
+.home-lockup{display:flex;justify-content:center;padding:2rem 0 .5rem}
+.home-lockup .logo-lockup{width:min(360px,60vw);height:auto}
+@media (max-width:480px){.home-lockup{padding:1.25rem 0 0}.home-lockup .logo-lockup{width:min(220px,62vw)}}
+.skip-link{z-index:30}
 .card-actions{position:relative;z-index:1;display:flex;gap:.75rem}
 .btn.open{background:var(--accent);color:var(--on-accent)}
 .theme-toggle{display:inline-grid;place-items:center;width:40px;height:40px;padding:0;color:var(--muted);background:transparent;border:0;border-radius:50%;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
