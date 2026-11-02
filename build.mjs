@@ -22,12 +22,17 @@ const assetHash = (f) => crypto.createHash('sha256').update(fs.readFileSync(path
 const asset = (rel, f) => `${rel}${f}?v=${assetHash(f)}`;
 
 function logo(rel) {
-  // Designer's Lite lockup (includes the name, so no visible name text beside it). Only one image shows at a time:
-  // CSS picks dark/light by theme, and the 48px main tile on phones too narrow for the 160px lockup plus clear space.
+  // Header: main tile mark (28px, decorative) plus the visible name words. CSS picks dark/light by theme.
   const L = site.logo;
-  const img = (src, cls, w, h) => `<img class="logo ${cls}" src="${asset(rel, src)}" alt="${esc(L.alt)}" width="${w}" height="${h}">`;
-  return img(L.dark, 'logo-lockup logo-dark', L.width, L.height) + img(L.light, 'logo-lockup logo-light', L.width, L.height)
-    + img(L.tileDark, 'logo-tile logo-dark', L.tileSize, L.tileSize) + img(L.tileLight, 'logo-tile logo-light', L.tileSize, L.tileSize);
+  const word = site.name.replace(/\s*Lite$/, '');
+  const img = (src, cls) => `<img class="logo ${cls}" src="${asset(rel, src)}" alt="" width="28" height="28">`;
+  return img(L.tileDark, 'logo-tile logo-dark') + img(L.tileLight, 'logo-tile logo-light') + `<span class="brand-word">${esc(word)}</span><span class="brand-lite">Lite</span>`;
+}
+// Home: Designer's Lite lockup centered at the top of the main content.
+function lockup(rel) {
+  const L = site.logo;
+  const img = (src, cls) => `<img class="logo ${cls}" src="${asset(rel, src)}" alt="${esc(L.alt)}" width="${L.width}" height="${L.height}">`;
+  return `<div class="home-lockup">${img(L.dark, 'logo-lockup logo-dark')}${img(L.light, 'logo-lockup logo-light')}</div>`;
 }
 
 function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
@@ -100,7 +105,8 @@ const home = page({
   rel: '',
   canonicalPath: '',
   jsonLd: { '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: `${base}/`, description: site.description },
-  body: `<section class="hero" aria-labelledby="hero-title">
+  body: `${lockup('')}
+<section class="hero" aria-labelledby="hero-title">
   <h1 id="hero-title" class="visually-hidden">${esc(site.hero.title)}</h1>
   <p>${esc(site.hero.lead)}</p>
 </section>

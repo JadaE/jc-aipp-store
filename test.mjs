@@ -114,7 +114,8 @@ for (const a of apps) {
     if (!sz || sz.w !== s.width || sz.h !== s.height) fail(`${a.id}: width/height ${s.width}x${s.height} do not match file ${sz ? sz.w + 'x' + sz.h : '?'}: ${s.src}`);
     if (!built.includes(`alt="${s.alt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"`)) fail(`${a.id}: built page lacks alt for ${s.src}`);
   }
-  if (/releases\/download\//.test(built)) fail(`${a.id}: a release-asset download is rendered (must stay source-only)`);
+  // Release assets: only a direct .apk from the app's own public repo Releases (approved per release).
+  for (const m of built.matchAll(/href="([^"]*releases\/download\/[^"]*)"/g)) if (!new RegExp(`^https://github\\.com/${owner}/${a.repo}/releases/download/v[\\d.]+/[\\w.-]+\\.apk$`).test(m[1])) fail(`${a.id}: release-asset download must be a .apk on its own repo Releases: ${m[1]}`);
 }
 if (failed === failedBefore) ok(`${shotCount} screenshots exist, match their sizes, and have alt text (no captions)`);
 
@@ -169,17 +170,23 @@ section('logo');
     const h = fs.readFileSync(f, 'utf8'), rf = path.relative(dist, f);
     for (const m of h.matchAll(LOGO_REF)) if (!/\?v=[0-9a-f]{10}$/.test(m[1] || m[2])) fail(`${rf}: un-tagged logo/icon URL ${m[1] || m[2]}`);
     const header = (h.match(/<header[\s\S]*?<\/header>/) || [''])[0];
-    for (const [cls, file] of [['logo-lockup logo-dark', 'lockup-lite-dark.svg'], ['logo-lockup logo-light', 'lockup-lite-light.svg'], ['logo-tile logo-dark', 'tile-main-dark.svg'], ['logo-tile logo-light', 'tile-main-light.svg']])
-      if ((header.match(new RegExp(`<img class="logo ${cls}" src="[^"]*assets/${file.replace('.', '\\.')}\\?v=[0-9a-f]{10}" alt="${esc(site.logo.alt)}"`, 'g')) || []).length !== 1) fail(`${rf}: header needs exactly one ${cls} (${file}) with alt "${site.logo.alt}"`);
-    if ((header.match(/<img /g) || []).length !== 4) fail(`${rf}: header must hold only the lockup and tile images`);
+    for (const [cls, file] of [['logo-tile logo-dark', 'tile-main-dark.svg'], ['logo-tile logo-light', 'tile-main-light.svg']])
+      if ((header.match(new RegExp(`<img class="logo ${cls}" src="[^"]*assets/${file.replace('.', '\\.')}\\?v=[0-9a-f]{10}" alt=""`, 'g')) || []).length !== 1) fail(`${rf}: header needs exactly one ${cls} (${file})`);
+    if ((header.match(/<img /g) || []).length !== 2) fail(`${rf}: header must hold only the two tile images`);
     if (!/<a class="brand" href="[^"]*index\.html">/.test(header)) fail(`${rf}: logo must link home`);
-    if (header.replace(/<[^>]+>/g, '').includes(site.name.replace(/\s*Lite$/, ''))) fail(`${rf}: visible site name text in the header duplicates the lockup`);
+    if (!header.replace(/<[^>]+>/g, '').includes(site.name.replace(/\s*Lite$/, ''))) fail(`${rf}: header must show the site name words`);
+    if (/<h1/.test(header)) fail(`${rf}: header words must not be an h1`);
   }
   const man = JSON.parse(fs.readFileSync(path.join(dist, 'manifest.webmanifest'), 'utf8'));
   for (const i of man.icons) if (!/^icon-\d+\.png\?v=[0-9a-f]{10}$/.test(i.src)) fail(`manifest icon not tagged: ${i.src}`);
   const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   if (!/<h1 id="hero-title" class="visually-hidden">/.test(home)) fail('home h1 should stay for SEO/screen readers but not repeat the lockup visually');
-  if (failed === lb) ok('final Lite lockup + tiles in header, alt tile favicons, main tile app icons; old marks absent; every logo/icon URL tagged');
+  if ((home.match(/<h1/g) || []).length !== 1) fail('home must have exactly one h1');
+  const lk = (home.match(/<div class="home-lockup">[\s\S]*?<\/div>/) || [''])[0];
+  for (const [cls, file] of [['logo-lockup logo-dark', 'lockup-lite-dark.svg'], ['logo-lockup logo-light', 'lockup-lite-light.svg']])
+    if (!new RegExp(`<img class="logo ${cls}" src="assets/${file.replace('.', '\\.')}\\?v=[0-9a-f]{10}" alt="${esc(site.logo.alt)}"`).test(lk)) fail(`home: lockup needs ${cls}`);
+  if (home.indexOf('class="home-lockup"') > home.indexOf('id="hero-title"') || home.indexOf('class="home-lockup"') < home.indexOf('<main')) fail('home: lockup must sit at the top of main, above the intro');
+  if (failed === lb) ok('header: tile + name words; home: centered Lite lockup above intro; alt tile favicons, main tile app icons; old marks absent; every logo/icon URL tagged');
 }
 // Open button: only for web apps with links.openWeb; first action and first on the card; nothing when null
 { const ob = failed; const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
@@ -372,8 +379,19 @@ else {
     for (const t of ['dark', 'light']) {
       await mp.evaluate((x) => { if (x === 'light') document.documentElement.setAttribute('data-theme', 'light'); else document.documentElement.removeAttribute('data-theme'); }, t);
       const vis = await mp.$$eval('.brand img', (els) => els.filter((e) => e.offsetParent !== null).map((e) => [e.getAttribute('src'), e.getBoundingClientRect().width, e.complete && e.naturalWidth > 0]));
-      if (vis.length !== 1 || !vis[0][0].includes(`lockup-lite-${t}.svg?v=`) || vis[0][1] < 160 || !vis[0][2]) fail(`${dev} ${t}: header should show only the ${t} Lite lockup, loaded, >=160px wide (got ${JSON.stringify(vis)})`);
-      else ok(`${dev} ${t}: header shows the ${t} Lite lockup at ${Math.round(vis[0][1])}px`);
+      const words = await mp.$eval('.brand', (e) => e.innerText.replace(/\s+/g, ' ').trim());
+      const pos = await mp.$eval('.site-header', (e) => [getComputedStyle(e).position, getComputedStyle(e).backgroundColor]);
+      if (vis.length !== 1 || !vis[0][0].includes(`tile-main-${t}.svg?v=`) || !vis[0][2] || words !== site.name) fail(`${dev} ${t}: header should show the ${t} tile plus "${site.name}" (got ${JSON.stringify(vis)} "${words}")`);
+      else if (pos[0] !== 'sticky' || /rgba\(.*, 0(\.\d+)?\)$/.test(pos[1])) fail(`${dev} ${t}: header must be sticky with an opaque background (got ${pos})`);
+      else ok(`${dev} ${t}: sticky opaque header shows the ${t} tile and the site name`);
+    }
+    const hp = await mctx.newPage();
+    await hp.goto(pathToFileURL(path.join(dist, 'index.html')).href);
+    for (const t of ['dark', 'light']) {
+      await hp.evaluate((x) => { if (x === 'light') document.documentElement.setAttribute('data-theme', 'light'); else document.documentElement.removeAttribute('data-theme'); }, t);
+      const lv = await hp.$$eval('.home-lockup img', (els) => els.filter((e) => e.offsetParent !== null).map((e) => [e.getAttribute('src'), e.getBoundingClientRect().width, e.complete && e.naturalWidth > 0]));
+      if (lv.length !== 1 || !lv[0][0].includes(`lockup-lite-${t}.svg?v=`) || lv[0][1] < 160 || !lv[0][2]) fail(`${dev} ${t}: home should show only the ${t} Lite lockup, loaded, >=160px (got ${JSON.stringify(lv)})`);
+      else ok(`${dev} ${t}: home shows the ${t} Lite lockup at ${Math.round(lv[0][1])}px`);
     }
     await mctx.close();
   }
