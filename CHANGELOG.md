@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.9
+- Galaxy Gridiron v0.0.12: Download now gets the Android APK (49.4 MB), and a new Open button starts the full web version in a new tab. Updates lists what's new in v0.0.12.
+- Footer: a small disclaimer on every page (personal, non-commercial; as-is, no warranty; not affiliated with Sleeper, the NFL or any team).
+- Tests allow only the approved public Galaxy Gridiron APK and web app paths on here.now; every other here.now address is still blocked.
+
 ## v0.0.7
 - Header: Designer's final Lite lockup (approved 4d), the dark-background version in dark mode and the light-background version in light mode, 160px wide with clear space around it. It replaces the separate star mark and the "JC AiPP Store Lite" text. Phones too narrow to fit it (under 300px) show the main tile icon instead.
 - The home page title is kept for screen readers and search but no longer shown, since the lockup right above it already says the name.
