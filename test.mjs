@@ -218,7 +218,9 @@ for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
   for (const ph of ['the easy way', 'a developer', 'AI agent', 'fork any of them', 'Browse the repos']) if (rest.includes(ph)) fail(`${f}: footer wording "${ph}" repeated outside the footer`);
   if (!/css\/style\.css\?v=[0-9a-f]{10}"/.test(h)) fail(`${f}: stylesheet URL must be cache-busted`);
 }
-if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets');
+if (!site.disclaimer) fail('site.json: disclaimer missing');
+for (const f of [path.join(dist, 'index.html'), ...apps.map((a) => path.join(dist, 'apps', a.id, 'index.html'))]) if (site.disclaimer && !fs.readFileSync(f, 'utf8').includes(`<p class="disclaimer">${esc(site.disclaimer)}</p>`)) fail(`${path.relative(dist, f)}: footer disclaimer missing`);
+if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets; disclaimer on every page');
 
 // 2. links and images in the build
 section('links and images');

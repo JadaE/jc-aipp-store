@@ -76,6 +76,7 @@ ${body}
 <footer class="site-footer"><div class="wrap">
   <p>${esc(site.footer)} <a href="https://github.com/${site.githubOwner}">Browse the repos on GitHub</a>.</p>
   <p class="fineprint">${esc(site.name)} v${esc(site.version)}</p>
+  ${site.disclaimer ? `<p class="disclaimer">${esc(site.disclaimer)}</p>` : ''}
 </div></footer>
 <script src="${asset(rel, 'js/theme.js')}" defer></script>
 ${scripts}</body>
