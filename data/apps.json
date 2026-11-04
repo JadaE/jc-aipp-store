@@ -13,6 +13,17 @@
       ],
       "updates": [
         {
+          "version": "0.0.12",
+          "date": "2026-11-04",
+          "notes": [
+            "New app ID and signing key, so Android installs it as a new app. Before switching, open the old app's Settings › Picks data › Export backup, install v0.0.12, use Settings › Picks data › Import, then uninstall the old app.",
+            "A web version now opens in any browser with the Open button.",
+            "The shared picks leaderboard is now password-protected.",
+            "Feedback is paused in this version.",
+            "Team screen header fixes, a running win % graph that only marks weeks with picks, and the \"players still to play\" note on the right side of the matchup."
+          ]
+        },
+        {
           "version": "0.0.11",
           "date": "2026-10-30",
           "notes": [
@@ -34,8 +45,8 @@
         "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.11",
-      "versionSource": "git tag v0.0.11; app/app.json (expo.version)",
+      "version": "0.0.12",
+      "versionSource": "public release notes for v0.0.12 (RELEASE_NOTES-public.md)",
       "icon": {
         "src": "assets/apps/galaxy-gridiron/icon.webp",
         "alt": "Galaxy Gridiron app icon"
@@ -74,10 +85,10 @@
       ],
       "screenshotsNote": "Galaxy Gridiron v0.0.11 from a real league, with all league, team and manager names and avatars blurred: Picks leaderboard, Picks Games tab, player card, Matchup and Team.",
       "links": {
-        "openWeb": null,
+        "openWeb": "https://gleaming-tangle-8ek4.here.now/play/",
         "download": {
-          "url": "https://github.com/JadaE/galaxy-gridiron/archive/refs/tags/v0.0.11.zip",
-          "label": "Download source v0.0.11"
+          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.12.apk",
+          "label": "Download APK (Android, 49.4 MB)"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -85,7 +96,6 @@
       },
       "vettedForks": [],
       "todo": [
-        "No GitHub release with an APK asset yet; only a source download is linked.",
         "Account screens (Team, Matchup, League) need mocked league data before they can be shown."
       ]
     },

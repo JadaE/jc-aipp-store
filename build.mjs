@@ -95,7 +95,7 @@ const iconImg = (a, rel, size, eager = false) =>
 const cards = apps.map((a) => `  <li class="card" data-platforms="${a.platforms.join(' ')}">
     <div class="card-head">${iconImg(a, '', 64)}<h2><a href="apps/${a.id}/index.html">${esc(a.name)}</a>${wip(a)}</h2></div>
     <p>${esc(a.summary)}</p>
-    ${openWeb(a) ? `<div class="card-actions"><a class="btn action open" href="${esc(openWeb(a))}">${openIcon}Open<span class="visually-hidden"> ${esc(a.name)}</span></a></div>` : ''}
+    ${openWeb(a) ? `<div class="card-actions"><a class="btn action open" href="${esc(openWeb(a))}" target="_blank" rel="noopener" aria-label="Open ${esc(a.name)} web app (opens in a new tab)">${openIcon}Open<span class="visually-hidden"> ${esc(a.name)}</span></a></div>` : ''}
     <div class="meta">${badges(a)}<span class="version">${known(a.version) ? 'v' + esc(a.version) : 'Version unknown'}</span></div>
   </li>`).join('\n');
 
@@ -164,7 +164,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
   <div><h1 id="app-title">${esc(a.name)}${wip(a)}</h1><p>${esc(a.summary)}</p><p class="author">By <a href="https://github.com/${esc(site.githubOwner)}">${esc(site.githubOwner)}</a></p></div>
 </section>
 <div class="actions${openWeb(a) ? ' has-open' : ''}" role="group" aria-label="Get ${esc(a.name)}">
-  ${openWeb(a) ? `<a class="btn action open" href="${esc(openWeb(a))}">${openIcon}Open</a>` : ''}
+  ${openWeb(a) ? `<a class="btn action open" href="${esc(openWeb(a))}" target="_blank" rel="noopener" aria-label="Open ${esc(a.name)} web app (opens in a new tab)">${openIcon}Open</a>` : ''}
   ${dl ? `<a class="btn action dl" href="${esc(dl.url)}">${dlIcon}${/^Download /.test(dl.label) ? `<span>Download<span class="more"> ${esc(dl.label.slice(9))}</span></span>` : esc(dl.label)}</a>` : ''}
   <a class="btn action fork" href="${repo}/fork">${gh}<span>Fork<span class="more"> on GitHub</span></span></a>
   ${a.links.iosAppStore ? `<a class="btn action" href="${esc(a.links.iosAppStore)}">App Store</a>` : ''}
