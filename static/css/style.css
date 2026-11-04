@@ -166,3 +166,4 @@ dl.facts dt{color:var(--muted)}dl.facts dd{margin:0}
 .upd-date{color:var(--muted);font-weight:500}
 .wip{display:inline-block;vertical-align:middle;font-size:.75rem;font-weight:700;line-height:1;padding:.3rem .55rem;border-radius:999px;background:#ffd166;color:#3a2a00;letter-spacing:.01em}
 .author{margin:.25rem 0 0;font-size:.9rem;color:var(--muted)}
+.site-footer .disclaimer{margin-top:.75rem;font-size:.8rem;color:var(--muted)}

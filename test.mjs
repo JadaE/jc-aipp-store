@@ -37,6 +37,9 @@ let apps = [];
 try { apps = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8')).apps; ok('valid JSON'); }
 catch (e) { fail(`apps.json does not parse: ${e.message}`); }
 const PLAT = ['android', 'ios', 'windows', 'macos', 'web'];
+// Public here.now files the owner approved (exact paths only). Everything else on here.now stays blocked.
+const hereNowAllow = [/^https:\/\/gleaming-tangle-8ek4\.here\.now\/store\/[A-Za-z0-9._-]+\.apk$/, /^https:\/\/gleaming-tangle-8ek4\.here\.now\/play\/$/];
+const hereNowAllowed = (u) => hereNowAllow.some((r) => r.test(u));
 const ids = new Set();
 for (const a of apps) {
   const where = a.id || '(no id)';
@@ -52,7 +55,7 @@ for (const a of apps) {
   if (a.version === 'Unknown' && !(a.todo || []).some((t) => /version/i.test(t))) fail(`${where}: Unknown version needs a TODO`);
   if (a.version !== 'Unknown' && !/^v?\d+(\.\d+)*$/.test(a.version)) fail(`${where}: version "${a.version}" is not Unknown or numeric`);
   const repoRe = new RegExp(`^https://github\\.com/${owner}/${a.repo}(/|$)`);
-  if (a.links?.download && !repoRe.test(a.links.download.url)) fail(`${where}: download URL must be on its public GitHub repo (needs approval otherwise): ${a.links.download.url}`);
+  if (a.links?.download && !repoRe.test(a.links.download.url) && !hereNowAllowed(a.links.download.url)) fail(`${where}: download URL must be on its public GitHub repo (needs approval otherwise): ${a.links.download.url}`);
   if (a.links?.iosAppStore != null && !/^https:\/\/apps\.apple\.com\//.test(a.links.iosAppStore)) fail(`${where}: iosAppStore must be an apps.apple.com URL`);
   // links.openWeb: reserved for a live web app URL. Present on every app (null until set); https only,
   // never the store's own here.now site, never a config.local.json value. Only rendered for web apps.
@@ -62,6 +65,7 @@ for (const a of apps) {
     try { const x = new URL(u); host = x.hostname; if (x.protocol !== 'https:') throw 0; } catch { fail(`${where}: links.openWeb must be an https URL`); }
     const own = new URL(resolveSiteUrl(root, site).url).hostname;
     if (host && (host === own || (/\.here\.now$/.test(own) && host.endsWith('.' + own)))) fail(`${where}: links.openWeb must not point at the store's own site`);
+    if (/\.here\.now$/.test(host) && !hereNowAllowed(u)) fail(`${where}: links.openWeb on here.now must be an approved public path`);
     if (fs.existsSync(path.join(root, 'config.local.json'))) {
       const vals = []; const walkV = (v) => typeof v === 'string' ? vals.push(v) : v && typeof v === 'object' && Object.values(v).forEach(walkV);
       try { walkV(JSON.parse(fs.readFileSync(path.join(root, 'config.local.json'), 'utf8'))); } catch {}
@@ -129,7 +133,7 @@ for (const a of apps) {
   const actions = (h.match(/<div class="actions[^"]*"[\s\S]*?<\/div>/) || [''])[0];
   const btns = [...actions.matchAll(/<a class="([^"]+)" href="([^"]+)"/g)].filter((b) => !/\bopen\b/.test(b[1])); // optional Open (web apps) comes before these
   if (/View repo/i.test(h)) fail(`${a.id}: 'View repo' button must be removed`);
-  if (!btns.length || !/\/archive\/|\/releases\//.test(btns[0][2])) fail(`${a.id}: Download must be the first button (after Open, if any)`);
+  if (!btns.length || !(/\/archive\/|\/releases\//.test(btns[0][2]) || hereNowAllowed(btns[0][2]))) fail(`${a.id}: Download must be the first button (after Open, if any)`);
   if (!btns[1] || !/\/fork$/.test(btns[1][2])) fail(`${a.id}: Fork must come right after Download`);
   if (btns.some((b) => b[2].endsWith('/fork') && /\bprimary\b/.test(b[1]))) fail(`${a.id}: Fork must not be the highlighted button`);
   if (/<figcaption|class="shots-hint"|class="actions-hint"|Scroll sideways|source code as a \.zip/i.test(h)) fail(`${a.id}: captions or usage how-to text must not appear`);
@@ -196,9 +200,10 @@ section('logo');
     const should = !!(a.links.openWeb && a.platforms.includes('web'));
     const has = /class="btn action open"/.test(h), cardHas = /class="btn action open"/.test(card);
     if (has !== should || cardHas !== should) fail(`${a.id}: Open button should ${should ? '' : 'not '}render`);
-    if (should && !/<div class="actions"[^>]*>\s*<a class="btn action open"/.test(h)) fail(`${a.id}: Open must be the first action`);
+    if (should && !/<div class="actions[^"]*"[^>]*>\s*<a class="btn action open"/.test(h)) fail(`${a.id}: Open must be the first action`);
+    if (should && [...(h + card).matchAll(/<a class="btn action open"[^>]*>/g)].some((m) => !/target="_blank"/.test(m[0]) || !/rel="noopener"/.test(m[0]) || !/aria-label="Open /.test(m[0]))) fail(`${a.id}: Open needs target=_blank, rel=noopener and an aria-label`);
   }
-  if (failed === ob) ok('Open button only for web apps with openWeb set, first; none rendered while null'); }
+  if (failed === ob) ok('Open button only for web apps with openWeb set, first, new tab + noopener + label; none rendered while null'); }
 // home meta/og/twitter descriptions: general wording only
 { const h = fs.readFileSync(path.join(dist, 'index.html'), 'utf8'); const want = 'Apps for everyday things, all in one place.';
   for (const sel of ['name="description"', 'property="og:description"', 'name="twitter:description"']) { const m = h.match(new RegExp(`<meta ${sel} content="([^"]*)"`)); if (m && m[1] !== want) fail(`index.html: ${sel} must be "${want}"`); }
@@ -213,7 +218,9 @@ for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
   for (const ph of ['the easy way', 'a developer', 'AI agent', 'fork any of them', 'Browse the repos']) if (rest.includes(ph)) fail(`${f}: footer wording "${ph}" repeated outside the footer`);
   if (!/css\/style\.css\?v=[0-9a-f]{10}"/.test(h)) fail(`${f}: stylesheet URL must be cache-busted`);
 }
-if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets');
+if (!site.disclaimer) fail('site.json: disclaimer missing');
+for (const f of [path.join(dist, 'index.html'), ...apps.map((a) => path.join(dist, 'apps', a.id, 'index.html'))]) if (site.disclaimer && !fs.readFileSync(f, 'utf8').includes(`<p class="disclaimer">${esc(site.disclaimer)}</p>`)) fail(`${path.relative(dist, f)}: footer disclaimer missing`);
+if (failed === footBefore) ok('footer line exactly once per page and not repeated; one logo mark; cache-busted assets; disclaimer on every page');
 
 // 2. links and images in the build
 section('links and images');
@@ -224,6 +231,7 @@ const allowedExternal = [
   new RegExp(`^https://github\\.com/${owner}/?$`),
   ...apps.map((a) => new RegExp(`^https://github\\.com/${owner}/${a.repo}(/(fork|releases.*|archive/refs/.+\\.zip))?$`)),
   /^https:\/\/apps\.apple\.com\//,
+  ...hereNowAllow,
   ...apps.filter((a) => a.links?.openWeb).map((a) => new RegExp(`^${a.links.openWeb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)),
 ];
 const base = resolveSiteUrl(root, site).url;
@@ -281,7 +289,7 @@ let hits = 0;
 for (const f of files) {
   if (path.basename(f) === 'config.local.json') continue;
   // The store's own public URL is expected in the built canonical/OG/sitemap tags (dist only, never tracked files).
-  const raw = fs.readFileSync(f, 'utf8'); const txt = f.startsWith(dist + path.sep) ? raw.split(base).join('') : raw;
+  const raw0 = fs.readFileSync(f, 'utf8').replace(/https:\/\/gleaming-tangle-8ek4\.here\.now\/[^\s"'<>)]*/g, (m) => hereNowAllowed(m) ? '' : m); const txt = f.startsWith(dist + path.sep) ? raw0.split(base).join('') : raw0;
   for (const [re, name] of patterns) if (re.test(txt)) { hits++; fail(`${path.relative(root, f)}: looks like a ${name}`); }
   for (const v of localValues) if (txt.includes(v)) { hits++; fail(`${path.relative(root, f)}: contains a config.local.json value`); }
 }
