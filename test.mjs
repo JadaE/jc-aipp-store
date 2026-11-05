@@ -38,7 +38,7 @@ try { apps = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8
 catch (e) { fail(`apps.json does not parse: ${e.message}`); }
 const PLAT = ['android', 'ios', 'windows', 'macos', 'web'];
 // Public here.now files the owner approved (exact paths only). Everything else on here.now stays blocked.
-const hereNowAllow = [/^https:\/\/gleaming-tangle-8ek4\.here\.now\/store\/[A-Za-z0-9._-]+\.apk$/, /^https:\/\/gleaming-tangle-8ek4\.here\.now\/play\/$/];
+const hereNowAllow = [/^https:\/\/gleaming-tangle-8ek4\.here\.now\/store\/GalaxyGridiron-v0\.0\.13\.apk$/, /^https:\/\/gleaming-tangle-8ek4\.here\.now\/play\/$/];
 const hereNowAllowed = (u) => hereNowAllow.some((r) => r.test(u));
 const ids = new Set();
 for (const a of apps) {
