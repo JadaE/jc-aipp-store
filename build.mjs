@@ -232,8 +232,9 @@ function submitPage() {
     <li><strong>Ownership proof:</strong> after you get your app ID, add a file named <code>jc-aipp-store.txt</code> containing that ID to the root of your repo. Your GitHub handle must own the repo.</li>
     <li><strong>No personal labels:</strong> use a brand or handle everywhere: app name, author line, screenshots and the signing certificate's owner field (for example, not <code>O="Your Name (personal)"</code>). Check the certificate with <code>keytool -printcert -jarfile app.apk</code> and read the Owner line.</li>
     <li><strong>Clean build:</strong> no API keys, private update links or test accounts in the app or the screenshots. Use sample data in screenshots.</li>
-    <li><strong>Images:</strong> give links to the icon and screenshots in your public repo; files can't be uploaded here.</li>
+    <li><strong>Images:</strong> give links to the icon and screenshots (PNG, WebP or JPEG; no SVG) in your public repo; files can't be uploaded here.</li>
   </ul>
+  <p class="privacy"><strong>Privacy:</strong> your contact email is stored privately with this site's form storage and seen only by the store owner and the store's review tools. It is never shown on the store or put in any repo. Submissions are deleted 90 days after review. To have yours deleted sooner, reply to your confirmation email.</p>
 </section>
 <form class="submit-form" id="submit-form" novalidate data-endpoint="${rel}.herenow/data/${COLLECTION}" data-form-version="${FORM_VERSION}" data-max-bytes="${RECORD_MAX_BYTES}">
 <div class="error-summary" id="error-summary" tabindex="-1" role="alert" hidden><h2>Please fix these fields</h2><ul></ul></div>

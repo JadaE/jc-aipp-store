@@ -45,7 +45,7 @@ export const FIELDS = [
   F('how_it_works', 'How it works and what data it uses', { section: 'app', kind: 'textarea', required: true, maxLength: 400, help: '1 to 3 lines. Say what data leaves the device, if any.' }),
   F('under_construction', 'This app is not fully ready yet (shows "Under construction")', { section: 'app', kind: 'checkbox' }),
 
-  F('icon_url', 'Icon URL', { section: 'media', kind: 'url', required: true, maxLength: 300, help: 'Square PNG or SVG, at least 512 px, from your public repo (https).' }),
+  F('icon_url', 'Icon URL', { section: 'media', kind: 'url', required: true, maxLength: 300, help: 'Square PNG, WebP or JPEG, at least 512 px, from your public repo (https). SVG is not accepted.' }),
   F('icon_alt', 'Icon alt text', { section: 'media', required: true, maxLength: 120 }),
   ...[1, 2, 3, 4, 5, 6].flatMap((n) => [
     F(`shot${n}_url`, `Screenshot ${n} URL${n > 2 ? ' (optional)' : ''}`, { section: 'media', kind: 'url', required: n <= 2, maxLength: 300 }),
@@ -89,4 +89,13 @@ export function manifest() {
       },
     },
   };
+}
+
+// P1-2 emergency manifest: same fields, public insert OFF. Keeps existing records ({ "collections": {} } would drop the
+// collection). Committed as tools/manifest-disabled.json. Publishing it is Review & Release's job and needs the owner's OK
+// (or the owner switch submissions.emergencyManifestPreapproved). The batch and its routine never publish.
+export function disabledManifest() {
+  const m = manifest();
+  m.collections[COLLECTION].access = { read: 'owner', insert: 'none', update: 'owner', delete: 'owner' };
+  return m;
 }

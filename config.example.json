@@ -33,6 +33,17 @@
       "JCA-0001": "SET IN config.local.json ONLY"
     },
     "reservedContactsNote": "Email on file for the reserved IDs (the store owner's own apps). Private: set real values only in config.local.json.",
-    "draftsDir": "OPTIONAL: a private folder outside the repo (default: ~/.aipp-store/drafts)"
+    "draftsDir": "OPTIONAL: a private folder outside the repo (default: ~/.aipp-store/drafts)",
+    "floodThreshold": 50,
+    "floodTotal": 2000,
+    "maxSendableDraftsPerDay": 10,
+    "perRecipientDays": 30,
+    "sendDraftsApproved": false,
+    "emergencyManifestPreapproved": false,
+    "cleanupDeletesApproved": false,
+    "switchesNote": "Owner switches, all OFF. sendDraftsApproved: lets capped confirmation drafts be marked sendable (each send still needs its own approval card). emergencyManifestPreapproved: standing OK for Review & Release to publish tools/manifest-disabled.json on a quarantine or flood P0. cleanupDeletesApproved: lets tools/submissions-cleanup.mjs --apply delete records. Turn on only in config.local.json, on the owner's decision.",
+    "cleanupJunkDays": 7,
+    "retentionDays": 90,
+    "draftRetentionDays": 30
   }
 }

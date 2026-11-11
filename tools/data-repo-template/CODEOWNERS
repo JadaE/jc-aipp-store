@@ -1,0 +1,4 @@
+# Template for the aipp-store-data repo (copy to .github/CODEOWNERS when the repo is created).
+# Only the store owner's GitHub account reviews and merges listing changes. Pair with branch protection:
+# require code-owner review + the check-listings status, and allow no bypass for bots.
+* @JadaE

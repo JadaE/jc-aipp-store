@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { COLLECTION } from './submission-schema.mjs';
+import { hiddenInstructionHits } from './scans.mjs';
 
 export const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 export const APP_ID_RE = /\bJCA-\d{4}\b/gi;
@@ -56,20 +57,28 @@ const addrOf = (from) => {
   return (m ? m[1] : s).trim().toLowerCase();
 };
 
+// Sender authentication (P2-4a): only a DMARC pass ALIGNED with the From domain counts (SPF of the envelope alone does not).
+// The inbox step must fill msg.auth = { dmarc: 'pass' | ..., aligned: true | false } from Authentication-Results.
+export const senderAuthenticated = (msg) => msg?.auth?.dmarc === 'pass' && msg?.auth?.aligned === true;
+
 /**
  * Decide whether one edit-request email is accepted.
- *   msg: { subject, body, from, senderAuthenticated }   senderAuthenticated = the inbox step's SPF/DKIM/DMARC pass for From
- *   emailOnFile: async (appId) => string | null          looks up the private contact email (never logged)
- * Returns { accepted, appId, reason }. reason: ok | no-app-id | several-app-ids | unknown-app | sender-not-authenticated | sender-mismatch
+ *   msg: { subject, body, from, auth: { dmarc, aligned } }
+ *   emailOnFile: async (appId) => string | null    (use makeEmailOnFile: verified + ownership-proved apps only)
+ * Returns { accepted, appId, reason, ban? }. reason: ok | no-app-id | several-app-ids | quarantine | unknown-app |
+ *   sender-not-authenticated | sender-mismatch. `quarantine` (hidden instructions in the mail) means: ban the sender,
+ *   pause the batch, alert the owner; never act on the text (P2-4b).
+ * An accepted edit is still only a draft PR whose new values go through validateEdit() and the ownership check; only the owner merges.
  */
 export async function verifyEditRequest(msg, { emailOnFile }) {
-  const ids = [...new Set(`${msg.subject || ''}\n${msg.body || ''}`.match(APP_ID_RE) || [])].map((x) => x.toUpperCase());
-  const uniq = [...new Set(ids)];
+  const text = `${msg.subject || ''}\n${msg.body || ''}`;
+  const uniq = [...new Set((text.match(APP_ID_RE) || []).map((x) => x.toUpperCase()))];
+  if (hiddenInstructionHits(msg.subject).length || hiddenInstructionHits(msg.body).length) return { accepted: false, appId: uniq.length === 1 ? uniq[0] : null, reason: 'quarantine', ban: true };
   if (!uniq.length) return { accepted: false, appId: null, reason: 'no-app-id' };
   if (uniq.length > 1) return { accepted: false, appId: null, reason: 'several-app-ids' };
   const appId = uniq[0];
   if (!(msg.subject || '').toUpperCase().includes(appId)) return { accepted: false, appId, reason: 'no-app-id' }; // ID must be in the subject
-  if (msg.senderAuthenticated !== true) return { accepted: false, appId, reason: 'sender-not-authenticated' };
+  if (!senderAuthenticated(msg)) return { accepted: false, appId, reason: 'sender-not-authenticated' };
   let onFile = null;
   try { onFile = await emailOnFile(appId); } catch { onFile = null; }
   if (!onFile) return { accepted: false, appId, reason: 'unknown-app' };
@@ -79,13 +88,26 @@ export async function verifyEditRequest(msg, { emailOnFile }) {
 }
 
 /**
- * Build the private email-on-file lookup.
- *  - Reserved IDs (the store owner's own apps): config.local.json submissions.reservedContacts { "JCA-0001": "..." } (gitignored).
- *  - Submitted apps: batch state file maps appId -> Site Data record ID; the email is read from that record with the owner API.
+ * P1-1 email verification: the reply to the confirmation mail. Same checks as an edit request, but against the RAW
+ * address on file (not yet verified). On success the caller stores markEmailVerified(state, appId): a flag keyed by app ID.
  */
-export function makeEmailOnFile({ reservedContacts = {}, state = {}, slug, apiKey, fetchImpl = globalThis.fetch }) {
+export async function verifyContactReply(msg, { rawEmailOnFile }) {
+  const r = await verifyEditRequest(msg, { emailOnFile: rawEmailOnFile });
+  return { verified: r.accepted, appId: r.appId, reason: r.reason, ...(r.ban ? { ban: true } : {}) };
+}
+export const markEmailVerified = (state, appId, now = new Date()) => ({ ...state, verified: { ...(state.verified || {}), [appId]: { emailVerified: true, at: now.toISOString() } } });
+export const markOwnershipPassed = (state, appId, now = new Date()) => ({ ...state, ownership: { ...(state.ownership || {}), [appId]: { passed: true, at: now.toISOString() } } });
+
+/**
+ * Build the private email-on-file lookup.
+ *  - Reserved IDs (the store owner's own apps): config.local.json submissions.reservedContacts (gitignored); owner-set, so trusted.
+ *  - Submitted apps: only when state.verified[appId].emailVerified AND state.ownership[appId].passed (P1-1 / P2-2),
+ *    unless requireVerified is false (used only by verifyContactReply). The address is read from the owner-only record.
+ */
+export function makeEmailOnFile({ reservedContacts = {}, state = {}, slug, apiKey, fetchImpl = globalThis.fetch, requireVerified = true }) {
   return async (appId) => {
     if (appId in reservedContacts) return EMAIL_RE.test(String(reservedContacts[appId]).trim()) ? String(reservedContacts[appId]).trim() : null; // placeholders count as no email on file
+    if (requireVerified && !(state.verified?.[appId]?.emailVerified === true && state.ownership?.[appId]?.passed === true)) return null;
     const rec = state.records?.[appId];
     if (!rec || !slug || !apiKey) return null;
     const res = await fetchImpl(`https://here.now/api/v1/publishes/${encodeURIComponent(slug)}/data/${COLLECTION}/${encodeURIComponent(rec)}`, { headers: { authorization: `Bearer ${apiKey}` } });

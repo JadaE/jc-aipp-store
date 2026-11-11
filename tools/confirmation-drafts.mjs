@@ -5,85 +5,46 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { FIELDS, PLATFORMS } from './submission-schema.mjs';
+import crypto from 'node:crypto';
 import { EMAIL_RE, frontOfficeReady } from './edit-requests.mjs';
 
 const STORE = 'JC AiPP Store';
-const clean = (s, max = 200) => String(s ?? '').replace(/[\u0000-\u0008\u000B-\u001F\u007F\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 const oneLine = (s) => String(s).replace(/[\r\n]+/g, ' ').trim();
-const label = (name) => (FIELDS.find((f) => f.name === name)?.label || name).replace(/\s*\(optional\)$/, '');
-const platformNames = (p) => String(p || '').split(',').map((x) => PLATFORMS.find(([v]) => v === x.trim())?.[1]).filter(Boolean).join(', ');
-
-// Scan hits are summarised as categories only, so a draft never repeats a secret or private value back.
-const SCAN_CATEGORY = (hit) => /owner name|personal label|private term/.test(hit) ? 'a personal name or label'
-  : /email address/.test(hit) ? 'an email address in a public field'
-  : /here\.now|config|local file path|credential in URL/.test(hit) ? 'a private link or file path'
-  : 'something that looks like a key, token or password';
+export const APP_ID_FORMAT = /^JCA-\d{4}$/;
 
 // Same line whether or not the front-office address is set; while it is TBD the draft is marked hold (no Reply-To).
 const REPLY_NOTE = 'Replies to this email thread are how changes and status updates are handled.';
 
 /**
- * Build one draft. kind: accepted | rejected | blocked. Quarantined, honeypot, rate-limited and duplicate records get no draft.
+ * Build one draft. Security Lead P1-1: the recipient address is UNVERIFIED, so a draft holds only fixed store text and the
+ * JCA ID: no submitted name, app name, summary or links (otherwise the store could relay phishing text to anyone).
+ * Only "accepted" gets a draft; rejected/blocked/quarantined records get none.
  * Returns { kind, recordId, appId, to, replyTo, replyToStatus, subject, body } or { skipped: reason }.
  */
-export function buildDraft(kind, { record, appId = null, reasons = [], frontOffice }) {
+export function buildDraft(kind, { record, appId = null, frontOffice }) {
+  if (kind !== 'accepted') return { skipped: 'not-sendable-unverified', recordId: record?.id, kind };
+  if (!APP_ID_FORMAT.test(String(appId))) return { skipped: 'bad-app-id', recordId: record?.id, kind };
   const f = (record && typeof record.data === 'object' && record.data) ? record.data : (record || {});
   const to = oneLine(f.contact_email || '').toLowerCase();
   if (!EMAIL_RE.test(to)) return { skipped: 'no-valid-recipient', recordId: record?.id, kind };
   const ready = frontOfficeReady(frontOffice);
-  const name = clean(f.dev_name, 60) || 'there';
-  const app = clean(f.app_name, 40) || 'your app';
-  const lines = [`Hi ${name},`, ''];
-  let subject;
-  if (kind === 'accepted') {
-    subject = `${STORE}: we received ${app} (${appId})`;
-    lines.push(
-      `Thanks for submitting ${app} to ${STORE} Lite. Your app ID is ${appId}.`, '',
-      'Summary of your listing:',
-      `- App: ${app}`,
-      `- Summary: ${clean(f.summary, 120)}`,
-      `- Category: ${clean(f.category, 40)}`,
-      `- Version: ${clean(f.version, 20)}`,
-      `- Platforms: ${platformNames(f.platforms)}`,
-      `- Source: ${clean(f.repo_url, 200)}`,
-      ...(f.download_page_url ? [`- Download page: ${clean(f.download_page_url, 300)}`] : []),
-      ...(f.open_web_url ? [`- Website: ${clean(f.open_web_url, 300)}`] : []),
-      `- Under construction: ${f.under_construction ? 'yes' : 'no'}`, '',
-      'Next steps:',
-      `1. Add a file named jc-aipp-store.txt to the root of your repo containing your app ID: ${appId}`,
-      '2. A person then reviews your listing. Nothing goes live until it is approved, and we will let you know in this thread.', '',
-    );
-  } else if (kind === 'rejected') {
-    const fields = [...new Set(reasons.map((r) => r.split(':')[0].trim()))].map(label);
-    subject = `${STORE}: your submission needs a few fixes (${app})`;
-    lines.push(
-      `Thanks for submitting ${app} to ${STORE} Lite. We couldn't accept it yet; please check these fields:`,
-      ...fields.slice(0, 15).map((x) => `- ${x}`), '',
-      'Next steps:',
-      '1. Fix the fields above and submit the form again. You will get an app ID once the submission passes the checks.',
-      '2. A person then reviews your listing before anything goes live.', '',
-    );
-  } else if (kind === 'blocked') {
-    const cats = [...new Set(reasons.map((r) => SCAN_CATEGORY(r.split(': ').slice(1).join(': ') || r)))];
-    subject = `${STORE}: we couldn't accept your submission (${app})`;
-    lines.push(
-      `Thanks for submitting ${app} to ${STORE} Lite. Our automatic checks found:`,
-      ...cats.map((c) => `- ${c}`), '',
-      'For your safety we have not repeated the details here.', '',
-      'Next steps:',
-      '1. Remove it from the listing (and from the app, if it is there too), then submit the form again.',
-      '2. If you think this is a mistake, reply to this email and a person will take a look.', '',
-    );
-  } else return { skipped: 'no-draft-for-kind', recordId: record?.id, kind };
-  lines.push(REPLY_NOTE);
-  if (appId) lines.push(`Please keep ${appId} in the subject and write from this address (the email on file); edits from other addresses aren't accepted.`);
-  lines.push('', `${STORE}`);
+  const body = [
+    'Hi,', '',
+    `Thanks for submitting an app to ${STORE} Lite. Your app ID is ${appId}.`, '',
+    'Next steps:',
+    `1. Confirm this email address: reply to this email from this same address and keep ${appId} in the subject. Until you do, we can't accept edit requests for this app.`,
+    `2. Add a file named jc-aipp-store.txt to the root of your repo containing your app ID: ${appId}`,
+    '3. A person then reviews your listing. Nothing goes live until it is approved.', '',
+    REPLY_NOTE,
+    `Please keep ${appId} in the subject and write from this address (the email on file); edits from other addresses aren't accepted.`, '',
+    'If you did not submit an app, you can ignore this email.', '',
+    STORE,
+  ].join('\n');
   return {
     kind, recordId: record?.id ?? null, appId, to,
     replyTo: ready ? frontOffice : null,
     replyToStatus: ready ? 'set' : 'hold: frontOfficeEmail is TBD; set it before sending so replies reach the front office',
-    subject: oneLine(subject), body: lines.join('\n'),
+    subject: `${STORE}: submission ${appId}`, body,
   };
 }
 
@@ -94,6 +55,7 @@ export function toEml(d) {
   h.push(`Subject: ${encWord(oneLine(d.subject))}`, 'X-JC-Draft: true (not sent; send only after approval)', `X-JC-Draft-Kind: ${d.kind}`);
   if (d.appId) h.push(`X-JC-App-ID: ${d.appId}`);
   if (!d.replyTo) h.push('X-JC-Draft-Status: hold-front-office-email-tbd');
+  if (d.sendable === false) h.push('X-JC-Draft-Sendable: no (held; see the .json)');
   h.push('MIME-Version: 1.0', 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: 8bit');
   return `${h.join('\r\n')}\r\n\r\n${d.body.replace(/\r?\n/g, '\r\n')}\r\n`;
 }
@@ -107,16 +69,31 @@ export function assertPrivateDir(dir, repoRoot) {
   if (!ignored) throw new Error('Drafts folder is inside the repo and not gitignored; refusing to write recipient emails there.');
 }
 
-// Writes <name>.json + <name>.eml per draft (mode 0600). Returns [{file, kind, appId, recordId, replyToStatus}] with no addresses.
-export function writeDrafts(dir, drafts, repoRoot) {
+// Writes <name>.json + <name>.eml per draft (mode 0600). P1-1 caps: at most cfg.maxSendableDraftsPerDay sendable drafts per
+// day and 1 per recipient per cfg.perRecipientDays days, tracked in a ledger of recipient HASHES (state.draftLedger).
+// A draft is sendable only if the owner switch sendDraftsApproved is ON, Reply-To is set and it is under both caps.
+// Even then every send is a separate approval card; nothing here sends.
+export function writeDrafts(dir, drafts, repoRoot, { state = {}, now = new Date(), cfg = {} } = {}) {
   assertPrivateDir(dir, repoRoot);
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const out = [];
+  const perDay = cfg.maxSendableDraftsPerDay ?? 10, perRecipientDays = cfg.perRecipientDays ?? 30;
+  const ledger = [...(state.draftLedger || [])].filter((e) => now - Date.parse(e.at) < perRecipientDays * 864e5);
+  const today = now.toISOString().slice(0, 10);
+  const files = [];
   for (const d of drafts) {
-    const base = (d.appId || `${d.recordId}-${d.kind}`).replace(/[^A-Za-z0-9._-]/g, '_');
-    fs.writeFileSync(path.join(dir, `${base}.json`), JSON.stringify({ ...d, sent: false, note: 'DRAFT. Not sent. Send only through an approval step.' }, null, 2) + '\n', { mode: 0o600 });
-    fs.writeFileSync(path.join(dir, `${base}.eml`), toEml(d), { mode: 0o600 });
-    out.push({ file: `${base}.eml`, kind: d.kind, appId: d.appId, recordId: d.recordId, replyToStatus: d.replyTo ? 'set' : 'hold-tbd' });
+    const h = crypto.createHash('sha256').update(d.to).digest('hex');
+    const hold = [];
+    if (cfg.sendDraftsApproved !== true) hold.push('owner switch sendDraftsApproved is OFF');
+    if (!d.replyTo) hold.push('frontOfficeEmail is TBD');
+    if (ledger.filter((e) => e.at.slice(0, 10) === today && e.sendable).length >= perDay) hold.push(`daily cap of ${perDay} sendable drafts reached`);
+    if (ledger.some((e) => e.h === h)) hold.push(`recipient already had a draft in the last ${perRecipientDays} days`);
+    const sendable = hold.length === 0;
+    ledger.push({ h, at: now.toISOString(), appId: d.appId, sendable });
+    const base = String(d.appId).replace(/[^A-Za-z0-9._-]/g, '_');
+    const meta = { ...d, sent: false, sendable, hold, approval: 'Send only through a per-draft approval card from the store owner. No bulk approve.' };
+    fs.writeFileSync(path.join(dir, `${base}.json`), JSON.stringify(meta, null, 2) + '\n', { mode: 0o600 });
+    fs.writeFileSync(path.join(dir, `${base}.eml`), toEml({ ...d, sendable }), { mode: 0o600 });
+    files.push({ file: `${base}.eml`, kind: d.kind, appId: d.appId, sendable, hold });
   }
-  return out;
+  return { files, ledger };
 }

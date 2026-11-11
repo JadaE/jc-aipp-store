@@ -78,8 +78,8 @@ records.
 
 ```bash
 node tools/submissions-batch.mjs --dry-run --no-network --fixtures records.json --out /tmp/batch   # test run, writes only to --out
-node tools/submissions-batch.mjs --dry-run       # reads live records (read-only), opens nothing
-node tools/submissions-batch.mjs                 # live: opens the draft PR and updates the local state file
+node tools/submissions-batch.mjs                 # DEFAULT is a dry run: reads live records (read-only), opens nothing, saves no state
+node tools/submissions-batch.mjs --live          # live: opens the draft PR and updates the local state file
 ```
 
 Settings live under `submissions` in `config.example.json` (approver, `licenseRequired`, reserved IDs, `frontOfficeEmail`,
@@ -129,3 +129,23 @@ Drafts go to a private folder: `<out>/drafts` for `--dry-run`, `submissions.draf
 gitignored (`drafts/` and `batch-out/` are). Recipient addresses exist only in those files: never in the PR, listings,
 summaries, state or logs. Nothing here sends mail, calls a mail API or creates mailbox drafts; a person sends each draft
 later through an approval step.
+
+## Hardening after the security review
+- **Fixed-text drafts (P1-1):** confirmation drafts are written for accepted records only and hold only store text and the
+  JCA ID (no submitted names, text or links). The first mail asks the developer to reply from the same address; only a
+  DMARC-aligned reply from the on-file address verifies it (`verifyContactReply`, flag stored by app ID). Edit requests need a
+  verified email and a passed ownership proof. Drafts are sendable only when the owner switch `sendDraftsApproved` is on, Reply-To
+  is set, and they are under the caps (10 per day, 1 per recipient per 30 days, tracked by hash). Every send is its own approval.
+- **Steering attempts (P1-2):** a hidden-instruction hit bans the submitter (email hash, handle, repo owner), pauses the batch
+  and stops the run (no PR, no drafts). A paused batch checks nothing until the owner runs `--unpause --owner-ok`.
+  `tools/manifest-disabled.json` is the emergency manifest (public insert off, records kept); Review & Release publishes it only
+  with the owner's OK or the standing switch `emergencyManifestPreapproved`. Record IDs and timestamps are validated before use.
+  Data-repo templates (`tools/data-repo-template/`: CODEOWNERS for the owner handle, a CI workflow) run `tools/check-listings.mjs`,
+  which re-scans every listing and checks repo ownership, forks and the `jc-aipp-store.txt` proof.
+- **Floods (P1-3):** the summary is capped at 8 KB (counts, reasons, 20-ID samples); more than `floodThreshold` (50) records in
+  24 h or `floodTotal` (2,000) stored pauses the batch; fetching resumes from a saved cursor and aborts with `fetch-cap` instead of
+  truncating. `tools/submissions-cleanup.mjs` plans retention deletes (junk after 7 days, everything after 90, drafts after 30);
+  `--apply` works only with the owner switch `cleanupDeletesApproved`.
+- **Link checks (P2-1):** HEAD only, manual redirects (3 hops), link rules on every hop, DNS checked against private ranges, and
+  only "unreachable" is reported. **Listings (P2-2, P2-3):** duplicates of pending listings are reported, not dropped; SVG images
+  are refused; download pages outside the repo's GitHub Releases and any website are flagged for manual review.

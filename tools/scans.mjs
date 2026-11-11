@@ -44,7 +44,9 @@ export const HIDDEN_INSTRUCTION_RULES = [
 
 // Returns [ruleName, ...] for text. Fields that are URLs skip the base64/markdown rules (they legitimately hold long paths).
 export function hiddenInstructionHits(text, { isUrl = false } = {}) {
-  const t = String(text ?? '');
+  const raw = String(text ?? '');
+  // P3-3: also test the NFKC form (full-width and compatibility characters fold to ASCII).
+  const t = raw === raw.normalize('NFKC') ? raw : `${raw}\n${raw.normalize('NFKC')}`;
   return HIDDEN_INSTRUCTION_RULES.filter(([name, re]) => !(isUrl && (name === 'base64-blob' || name === 'markdown-link')) && re.test(t)).map(([n]) => n);
 }
 
