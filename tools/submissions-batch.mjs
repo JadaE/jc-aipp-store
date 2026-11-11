@@ -19,6 +19,7 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { FIELDS, COLLECTION, HONEYPOT, PLATFORMS } from './submission-schema.mjs';
 import { secretHits, personalHits, hiddenInstructionHits } from './scans.mjs';
+import { buildDraft, writeDrafts } from './confirmation-drafts.mjs';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const HOUR = 3600e3;
@@ -37,13 +38,14 @@ export function loadConfig(dir = root) {
     licenseRequired: !!sub.licenseRequired,
     reservedFrom: idNum(sub.reservedIds?.from || 'JCA-0001'),
     reservedTo: idNum(sub.reservedIds?.to || 'JCA-0005'),
-    frontOfficeEmail: sub.frontOfficeEmail || 'TBD',
     dataRepo: sub.dataRepo || 'JadaE/aipp-store-data',
     dataRepoBase: sub.dataRepoBase || 'master',
     batchSize: +sub.batchSize || 10,
     perEmailPerHour: +sub.perEmailPerHour || 3,
     linkCheckTimeoutMs: +sub.linkCheckTimeoutMs || 8000,
     stateFile: placeholder(sub.stateFile) ? path.join(os.homedir(), '.aipp-store', 'submissions-state.json') : sub.stateFile,
+    draftsDir: placeholder(sub.draftsDir) ? path.join(os.homedir(), '.aipp-store', 'drafts') : sub.draftsDir, // private; JC-9 confirmation drafts
+    frontOfficeEmail: String(local.submissions?.frontOfficeEmail || ex.submissions?.frontOfficeEmail || 'TBD').trim(),
     privateTerms: (sub.privateTerms || []).filter((t) => !placeholder(t)),
     reservedContacts: local.submissions?.reservedContacts || {}, // private: config.local.json only (JC-8 email on file for own apps)
     slug: process.env.HERENOW_SLUG || (placeholder(local.herenow?.slug) || /^your-/.test(local.herenow?.slug || '') ? '' : local.herenow.slug),
@@ -257,7 +259,14 @@ export async function runBatch(records, { cfg, state = { processed: {}, lastId: 
   // App ID -> Site Data record ID (state file only), so JC-8/JC-9 can look up the email on file in Site Data. No emails stored here.
   newState.records = { ...(state.records || {}) };
   for (const a of results.accepted) newState.records[a.appId] = a.id;
-  return { results, listings, body: prBody({ listings, results, now, cfg }), newState };
+  // JC-9: confirmation drafts (accepted + rejected + blocked). Quarantined records get none: a person looks first.
+  const byId = Object.fromEntries(records.map((r) => [r.id, r]));
+  const drafts = [
+    ...results.accepted.map((a) => buildDraft('accepted', { record: byId[a.id], appId: a.appId, frontOffice: cfg.frontOfficeEmail })),
+    ...results.rejected.map((x) => buildDraft('rejected', { record: byId[x.id], reasons: x.reasons, frontOffice: cfg.frontOfficeEmail })),
+    ...results.blocked.map((x) => buildDraft('blocked', { record: byId[x.id], reasons: x.reasons, frontOffice: cfg.frontOfficeEmail })),
+  ].filter((d) => !d.skipped);
+  return { results, listings, body: prBody({ listings, results, now, cfg }), newState, drafts };
 }
 
 // ---------- I/O for the CLI
@@ -309,7 +318,7 @@ async function main(argv) {
   // The store's own apps count as existing listings, so their repos can't be submitted again.
   try { const own = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8')).apps; existing = [...existing, ...own.map((a) => ({ repo: { url: `https://github.com/${cfg.ownerHandle}/${a.repo}` } }))]; } catch {}
 
-  const { results, listings, body, newState } = await runBatch(records, { cfg, state, existing, now, network: !has('--no-network') });
+  const { results, listings, body, newState, drafts } = await runBatch(records, { cfg, state, existing, now, network: !has('--no-network') });
   const summary = {
     mode: dry ? 'dry-run' : 'live', at: now.toISOString(), read: records.length,
     accepted: results.accepted, rejected: results.rejected.map((x) => ({ id: x.id, count: x.reasons.length, reasons: x.reasons })),
@@ -319,6 +328,10 @@ async function main(argv) {
   };
   const outDir = val('--out') || (dry ? fs.mkdtempSync(path.join(os.tmpdir(), 'aipp-batch-dry-')) : null);
 
+  // Drafts go to a private folder (never the PR). Dry run: <out>/drafts. Live: cfg.draftsDir/<date>.
+  const draftsDir = val('--drafts') || (dry ? path.join(outDir, 'drafts') : path.join(cfg.draftsDir, now.toISOString().slice(0, 10)));
+  summary.drafts = drafts.length ? writeDrafts(draftsDir, drafts, root) : [];
+  summary.draftsNote = 'Drafts are NOT sent. A person sends them later through an approval step.';
   if (dry) {
     writeOut(outDir, listings, body, summary);
     summary.wouldOpenDraftPr = listings.length ? { repo: cfg.dataRepo, base: cfg.dataRepoBase, branch: `submissions/${now.toISOString().slice(0, 10)}`, files: listings.map((l) => `listings/${l.appId}.json`) } : null;

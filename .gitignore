@@ -10,3 +10,6 @@ dist/
 node_modules/
 *.log
 .DS_Store
+# local batch output and confirmation drafts (hold recipient emails)
+drafts/
+batch-out/

@@ -115,3 +115,17 @@ returns `{ accepted, appId, reason }` (`ok`, `no-app-id`, `several-app-ids`, `un
 address up privately: reserved IDs from `config.local.json` `submissions.reservedContacts`, submitted apps from their
 owner-only Site Data record (app ID to record ID comes from the batch state file). Addresses never go into results,
 logs, public data or the repo. There is no inbox reading or sending here; a later, human-approved step will call this check.
+
+## Confirmation email drafts (JC-9)
+The batch writes a confirmation email **draft** (`<name>.json` with to/subject/body plus a matching `.eml`, mode 0600)
+for every accepted record (app ID, listing summary, next steps: add `jc-aipp-store.txt` with the app ID, then a human
+review; replies to the thread handle changes and status), every rejected record (which fields to fix) and every record
+blocked by the scans (categories only; the flagged value is never repeated). Quarantined, honeypot, rate-limited and
+duplicate records get no draft. `frontOfficeEmail` is the Reply-To; while it is `"TBD"` the draft has no Reply-To and is
+marked `X-JC-Draft-Status: hold-front-office-email-tbd`.
+
+Drafts go to a private folder: `<out>/drafts` for `--dry-run`, `submissions.draftsDir/<date>` (default
+`~/.aipp-store/drafts`) for live runs, or `--drafts <dir>`. The batch refuses a folder inside the repo unless it is
+gitignored (`drafts/` and `batch-out/` are). Recipient addresses exist only in those files: never in the PR, listings,
+summaries, state or logs. Nothing here sends mail, calls a mail API or creates mailbox drafts; a person sends each draft
+later through an approval step.

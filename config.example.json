@@ -32,6 +32,7 @@
     "reservedContacts": {
       "JCA-0001": "SET IN config.local.json ONLY"
     },
-    "reservedContactsNote": "Email on file for the reserved IDs (the store owner's own apps). Private: set real values only in config.local.json."
+    "reservedContactsNote": "Email on file for the reserved IDs (the store owner's own apps). Private: set real values only in config.local.json.",
+    "draftsDir": "OPTIONAL: a private folder outside the repo (default: ~/.aipp-store/drafts)"
   }
 }
