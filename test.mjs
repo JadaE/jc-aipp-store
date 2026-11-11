@@ -7,6 +7,7 @@ import { execSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { resolveSiteUrl } from './siteurl.mjs';
 import { SECRET_PATTERNS } from './tools/scans.mjs';
+import { resolveFrontOfficeEmail, frontOfficeReady } from './tools/edit-requests.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
 const dist = path.join(root, 'dist');
@@ -232,6 +233,7 @@ const allowedExternal = [
   new RegExp(`^https://github\\.com/${owner}/?$`),
   ...apps.map((a) => new RegExp(`^https://github\\.com/${owner}/${a.repo}(/(fork|releases.*|archive/refs/.+\\.zip))?$`)),
   /^https:\/\/apps\.apple\.com\//,
+  ...(frontOfficeReady(resolveFrontOfficeEmail(root)) ? [new RegExp(`^mailto:${resolveFrontOfficeEmail(root).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\?subject=[^"]*&body=[^"]*$`)] : []),
   ...hereNowAllow,
   ...apps.filter((a) => a.links?.openWeb).map((a) => new RegExp(`^${a.links.openWeb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)),
 ];
@@ -274,7 +276,7 @@ const localCfg = path.join(root, 'config.local.json');
 const localValues = [];
 if (fs.existsSync(localCfg)) {
   const collect = (v) => typeof v === 'string' ? (v.length >= 6 && localValues.push(v)) : v && typeof v === 'object' && Object.values(v).forEach(collect);
-  try { collect(JSON.parse(fs.readFileSync(localCfg, 'utf8'))); } catch { fail('config.local.json does not parse'); }
+  try { const lc = JSON.parse(fs.readFileSync(localCfg, 'utf8')); if (lc.submissions) delete lc.submissions.frontOfficeEmail; /* public mailto target by design */ collect(lc); } catch { fail('config.local.json does not parse'); }
 }
 try { if (execSync('git ls-files config.local.json', { cwd: root }).toString().trim()) fail('config.local.json is tracked by git'); } catch {}
 let hits = 0;

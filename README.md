@@ -99,3 +99,19 @@ curl -s -o /dev/null -w '%{http_code}\n' "$SITE/.herenow/data/submissions/$PROBE
 curl -s "https://here.now/api/v1/publishes/$SLUG/data/submissions?limit=5" -H "Authorization: Bearer $HERENOW_API_KEY"  # owner sees it
 curl -s -X DELETE "https://here.now/api/v1/publishes/$SLUG/data/submissions/$PROBE_ID" -H "Authorization: Bearer $HERENOW_API_KEY"  # clean up
 ```
+
+## Request an edit (JC-8)
+Each app has a public `appId` in `data/apps.json` (the store owner's own apps use the reserved `JCA-0001` to `JCA-0005`).
+App pages show a "Request an edit" panel quoting that ID. When `submissions.frontOfficeEmail` is a real address, the
+panel has a mailto link whose subject and body quote the app ID with a short template (what to change, the new text, send
+it from the email on file). While it is `"TBD"` (or invalid) the page shows the ID and a "coming soon" note instead of a
+disabled link, since a disabled link can't be focused or explained to screen readers. The front-office address is public
+by design; set it in `config.example.json` or `config.local.json` (`FRONT_OFFICE_EMAIL` overrides for a build).
+
+Edits are accepted only from the email on file: `tools/edit-requests.mjs` `verifyEditRequest(msg, { emailOnFile })`
+takes one parsed email (`subject`, `body`, `from`, `senderAuthenticated` = the inbox's SPF/DKIM/DMARC pass for From) and
+returns `{ accepted, appId, reason }` (`ok`, `no-app-id`, `several-app-ids`, `unknown-app`, `sender-not-authenticated`,
+`sender-mismatch`). The app ID must be in the subject and be the only ID in the message. `makeEmailOnFile` looks the
+address up privately: reserved IDs from `config.local.json` `submissions.reservedContacts`, submitted apps from their
+owner-only Site Data record (app ID to record ID comes from the batch state file). Addresses never go into results,
+logs, public data or the repo. There is no inbox reading or sending here; a later, human-approved step will call this check.

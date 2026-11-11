@@ -27,6 +27,11 @@
     "linkCheckTimeoutMs": 8000,
     "stateFile": "OPTIONAL: a path outside the repo (default: ~/.aipp-store/submissions-state.json)",
     "privateTerms": [],
-    "privateTermsNote": "Put private names and terms to block (family words, real usernames, league or pet names) in config.local.json only, never here."
+    "privateTermsNote": "Put private names and terms to block (family words, real usernames, league or pet names) in config.local.json only, never here.",
+    "frontOfficeEmailNote": "Public mailto target for Request an edit links. While \"TBD\" (or not a valid address), app pages show the app ID and a \"coming soon\" note instead of a link.",
+    "reservedContacts": {
+      "JCA-0001": "SET IN config.local.json ONLY"
+    },
+    "reservedContactsNote": "Email on file for the reserved IDs (the store owner's own apps). Private: set real values only in config.local.json."
   }
 }

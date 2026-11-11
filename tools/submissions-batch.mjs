@@ -45,6 +45,7 @@ export function loadConfig(dir = root) {
     linkCheckTimeoutMs: +sub.linkCheckTimeoutMs || 8000,
     stateFile: placeholder(sub.stateFile) ? path.join(os.homedir(), '.aipp-store', 'submissions-state.json') : sub.stateFile,
     privateTerms: (sub.privateTerms || []).filter((t) => !placeholder(t)),
+    reservedContacts: local.submissions?.reservedContacts || {}, // private: config.local.json only (JC-8 email on file for own apps)
     slug: process.env.HERENOW_SLUG || (placeholder(local.herenow?.slug) || /^your-/.test(local.herenow?.slug || '') ? '' : local.herenow.slug),
     apiKey: process.env.HERENOW_API_KEY || (placeholder(local.herenow?.apiKey) ? '' : local.herenow.apiKey),
     ownerHandle: (() => { try { return JSON.parse(fs.readFileSync(path.join(dir, 'data/site.json'), 'utf8')).githubOwner; } catch { return ''; } })(),

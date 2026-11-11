@@ -198,3 +198,6 @@ dl.facts dt{color:var(--muted)}dl.facts dd{margin:0}
 .form-actions .btn{font:inherit;font-weight:700;cursor:pointer;border:0}
 .form-actions .btn:disabled{opacity:.6;cursor:progress}
 .form-status{min-height:1.6em;font-weight:600}
+/* JC-8 request an edit */
+.edit-request .app-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700}
+.edit-request .hint{margin-top:.25rem}

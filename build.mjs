@@ -3,10 +3,12 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { resolveSiteUrl } from './siteurl.mjs';
+import { resolveFrontOfficeEmail, editRequestPanel } from './tools/edit-requests.mjs';
 import { FIELDS, COLLECTION, FORM_VERSION, RECORD_MAX_BYTES, PLATFORMS as SUBMIT_PLATFORMS, manifest as siteDataManifest } from './tools/submission-schema.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
-const out = path.join(root, 'dist');
+const out = process.env.OUT_DIR ? path.resolve(process.env.OUT_DIR) : path.join(root, 'dist'); // OUT_DIR: tests only
+const frontOffice = resolveFrontOfficeEmail(root);
 const site = JSON.parse(fs.readFileSync(path.join(root, 'data/site.json'), 'utf8'));
 const { apps } = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8'));
 
@@ -178,6 +180,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
     <section class="panel" aria-labelledby="about-title" data-section="about"><h2 id="about-title">About</h2>${a.about.map((p) => `<p>${esc(p)}</p>`).join('')}</section>
     <section class="panel updates" aria-labelledby="updates-title" data-section="updates"><h2 id="updates-title">Updates</h2>${updates}</section>
     <section class="panel soon" aria-labelledby="forks-title"><h2 id="forks-title">Vetted forks</h2><p>Vetted forks coming soon. Forks that pass review will be listed here.</p></section>
+    ${editRequestPanel(a, frontOffice, esc)}
   </div>
   <aside class="panel" aria-labelledby="facts-title">
     <h2 id="facts-title">Details</h2>

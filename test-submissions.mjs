@@ -9,6 +9,7 @@ import { execFileSync, execSync } from 'node:child_process';
 import { FIELDS, COLLECTION, HONEYPOT, RATE_LIMIT, manifest } from './tools/submission-schema.mjs';
 import { OWNER_NAME } from './tools/scans.mjs';
 import { loadConfig, triage, checkRecord, runBatch, fmtId } from './tools/submissions-batch.mjs';
+import { verifyEditRequest, makeEmailOnFile, editMail, frontOfficeReady } from './tools/edit-requests.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
 const dist = path.join(root, 'dist');
@@ -197,6 +198,79 @@ const withData = (r, d) => ({ ...r, data: { ...r.data, ...d } });
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
+
+// ---------- JC-8: Request an edit
+section('edit requests (JC-8)');
+{
+  const apps = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8')).apps;
+  const ex = JSON.parse(fs.readFileSync(path.join(root, 'config.example.json'), 'utf8')).submissions;
+  const ids = apps.map((a) => a.appId);
+  expect(ids.length === 5 && new Set(ids).size === 5 && ids.every((x) => /^JCA-000[1-5]$/.test(x)), `own apps mapped to reserved IDs: ${apps.map((a) => `${a.id}=${a.appId}`).join(', ')}`);
+  // Current build: frontOfficeEmail is TBD -> no link, app ID + "coming soon" note
+  const tbd = !frontOfficeReady(ex.frontOfficeEmail) && !process.env.FRONT_OFFICE_EMAIL;
+  const bad = [];
+  for (const a of apps) {
+    const h = fs.readFileSync(path.join(dist, 'apps', a.id, 'index.html'), 'utf8');
+    const panel = (h.match(/<section class="panel edit-request"[\s\S]*?<\/section>/) || [''])[0];
+    if (!panel.includes(`<span class="app-id">${a.appId}</span>`) || !/<h2 id="edit-title">Request an edit<\/h2>/.test(panel)) bad.push(`${a.id}: panel/app ID`);
+    if (tbd && (/mailto:/.test(h) || !/coming soon/.test(panel))) bad.push(`${a.id}: TBD should show a note, no link`);
+    if (/@/.test(panel.replace(/href="mailto:[^"]*"/, ''))) bad.push(`${a.id}: an address shows in page text`);
+  }
+  expect(!bad.length, `every app page has a Request an edit panel quoting its app ID${tbd ? '; address TBD so no link, just a note' : ''}${bad.length ? ` (${bad})` : ''}`);
+  // Build with a test address into a temp dir: real mailto links, valid HTML, axe clean
+  const tmpOut = fs.mkdtempSync(path.join(os.tmpdir(), 'aipp-jc8-'));
+  const addr = 'frontoffice@example.com';
+  execFileSync('node', ['build.mjs'], { cwd: root, env: { ...process.env, OUT_DIR: tmpOut, FRONT_OFFICE_EMAIL: addr }, stdio: 'ignore' });
+  const bad2 = [];
+  for (const a of apps) {
+    const h = fs.readFileSync(path.join(tmpOut, 'apps', a.id, 'index.html'), 'utf8');
+    const href = ((h.match(/<a class="edit-link" href="([^"]+)"/) || [])[1] || '').replace(/&amp;/g, '&');
+    const m = href.match(/^mailto:([^?]+)\?subject=([^&]*)&body=(.*)$/);
+    if (!m || m[1] !== addr) { bad2.push(`${a.id}: no mailto`); continue; }
+    const subj = decodeURIComponent(m[2]), body = decodeURIComponent(m[3]);
+    if (subj !== `Edit request: ${a.appId} (${a.name})` || !body.includes(`App ID: ${a.appId}`) || !/What should change\?/.test(body) || !/email address on file/.test(body)) bad2.push(`${a.id}: subject/body template`);
+    if (!/email address on file/.test(h.replace(href, ''))) bad2.push(`${a.id}: on-page note about the email on file`);
+  }
+  expect(!bad2.length, `with an address set: mailto quotes the app ID in subject + body, with the change template${bad2.length ? ` (${bad2})` : ''}`);
+  const editDefault = editMail({ appId: 'JCA-0001', name: 'X' }, addr);
+  expect(!/[\r\n]/.test(editDefault.href) && editDefault.href.startsWith(`mailto:${addr}?subject=`), 'mailto is fully URL-encoded');
+  const hv = path.join(root, 'node_modules/.bin/html-validate');
+  if (fs.existsSync(hv)) { try { execFileSync(hv, ['--config', path.join(root, '.htmlvalidate.json'), path.join(tmpOut, 'apps', apps[0].id, 'index.html')], { cwd: root, stdio: 'pipe' }); ok('html-validate: app page with the edit link'); } catch (e) { fail(`html-validate (edit link page): ${e.stdout}`); } }
+  globalThis.__jc8Out = tmpOut;
+}
+{
+  // processing: accept only from the email on file; never leak an address
+  const onFile = { 'JCA-0001': 'Owner.Mail@Example.com', 'JCA-0007': 'dev7@example.com' };
+  const emailOnFile = async (id) => onFile[id] || null;
+  const logs = []; const orig = [console.log, console.error, console.warn, console.info];
+  console.log = console.error = console.warn = console.info = (...a) => logs.push(a.join(' '));
+  const cases = [
+    ['matching sender accepted (case + display name ignored)', { subject: 'Edit request: JCA-0001 (Galaxy Gridiron)', body: 'App ID: JCA-0001\nNew summary...', from: 'Someone <owner.mail@example.COM>', senderAuthenticated: true }, 'ok', true],
+    ['other sender rejected', { subject: 'Edit request: JCA-0007', body: '', from: 'attacker@example.net', senderAuthenticated: true }, 'sender-mismatch', false],
+    ['look-alike sender rejected', { subject: 'Edit request: JCA-0007', body: '', from: '"dev7@example.com" <dev7@example.com.evil.net>', senderAuthenticated: true }, 'sender-mismatch', false],
+    ['unauthenticated From rejected (spoofing)', { subject: 'Edit request: JCA-0007', body: '', from: 'dev7@example.com', senderAuthenticated: false }, 'sender-not-authenticated', false],
+    ['no app ID rejected', { subject: 'Please fix my page', body: 'thanks', from: 'dev7@example.com', senderAuthenticated: true }, 'no-app-id', false],
+    ['app ID only in body rejected', { subject: 'Edit', body: 'JCA-0007', from: 'dev7@example.com', senderAuthenticated: true }, 'no-app-id', false],
+    ['two app IDs rejected', { subject: 'Edit JCA-0007 and JCA-0001', body: '', from: 'dev7@example.com', senderAuthenticated: true }, 'several-app-ids', false],
+    ['unknown app rejected', { subject: 'Edit JCA-0099', body: '', from: 'dev7@example.com', senderAuthenticated: true }, 'unknown-app', false],
+  ];
+  const results = [];
+  for (const [name, msg, reason, acc] of cases) { const r = await verifyEditRequest(msg, { emailOnFile }); results.push([name, r, reason, acc]); }
+  [console.log, console.error, console.warn, console.info] = orig;
+  const wrong = results.filter(([, r, reason, acc]) => r.reason !== reason || r.accepted !== acc).map(([n, r]) => `${n} -> ${r.reason}`);
+  expect(!wrong.length, `verifyEditRequest: ${cases.length} cases${wrong.length ? ` (${wrong})` : ''}`);
+  expect(!results.some(([, r]) => JSON.stringify(r).includes('@')) && !logs.length, 'results carry only app ID + reason; nothing logged');
+  // lookup: reserved IDs from config.local, submitted apps via state -> owner API record (stubbed, no network)
+  const calls = [];
+  const fetchImpl = async (u, o) => { calls.push([u, !!o.headers.authorization]); return { ok: true, json: async () => ({ record: { id: 'rec9', data: { contact_email: 'dev9@example.com' } } }) }; };
+  const look = makeEmailOnFile({ reservedContacts: { 'JCA-0002': 'own@example.com' }, state: { records: { 'JCA-0009': 'rec9' } }, slug: 'test-slug', apiKey: 'k', fetchImpl });
+  const got = [await look('JCA-0002'), await look('JCA-0009'), await look('JCA-0010')];
+  expect(got[0] === 'own@example.com' && got[1] === 'dev9@example.com' && got[2] === null && calls.length === 1 && calls[0][1] && /\/data\/submissions\/rec9$/.test(calls[0][0]), 'email-on-file lookup: reserved IDs from config.local, others from the owner-only Site Data record');
+  expect(await makeEmailOnFile({ reservedContacts: { 'JCA-0001': 'SET IN config.local.json ONLY' } })('JCA-0001') === null, 'placeholder contact counts as no email on file (edit rejected)');
+  const ex = JSON.parse(fs.readFileSync(path.join(root, 'config.example.json'), 'utf8')).submissions;
+  expect(ex.reservedContacts && !Object.values(ex.reservedContacts).some((v) => /@/.test(String(v))), 'config.example.json has no real contact emails (reservedContacts placeholders only)');
+}
+
 // ---------- browser: client validation, honeypot, POST
 section('submissions: form in a browser');
 const chrome = process.env.CHROME || ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find((p) => fs.existsSync(p));
@@ -283,7 +357,20 @@ else {
       const over = await mp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       expect(!over, `${dev}: form fits the screen (no sideways scroll)`); await ctx.close();
     }
-  } finally { await browser.close(); server.close(); }
+    // 7. JC-8 page with a real edit link: axe clean in both themes
+    if (globalThis.__jc8Out) {
+      const ep = await browser.newPage();
+      const ef = fs.readdirSync(path.join(globalThis.__jc8Out, 'apps'))[0];
+      await ep.goto(`file://${path.join(globalThis.__jc8Out, 'apps', ef, 'index.html')}`);
+      await ep.addScriptTag({ path: axePath });
+      for (const theme of ['dark', 'light']) {
+        await ep.evaluate((t) => { if (t === 'light') document.documentElement.setAttribute('data-theme', 'light'); else document.documentElement.removeAttribute('data-theme'); }, theme);
+        const v = (await ep.evaluate(async () => await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] } }))).violations;
+        expect(!v.length, `axe clean on an app page with the edit link (${theme})${v.length ? `: ${v.map((x) => x.id).join(', ')}` : ''}`);
+      }
+      await ep.close();
+    }
+  } finally { await browser.close(); server.close(); if (globalThis.__jc8Out) fs.rmSync(globalThis.__jc8Out, { recursive: true, force: true }); }
 }
 
 console.log(failed ? `\n${failed} submission check(s) failed` : '\nAll submission checks passed');

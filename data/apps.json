@@ -1,8 +1,9 @@
 {
-  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden).",
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden). appId: the public JCA ID (JCA-0001 to JCA-0005 are reserved for the store owner's own apps); quoted in edit requests.",
   "apps": [
     {
       "id": "galaxy-gridiron",
+      "appId": "JCA-0001",
       "name": "Galaxy Gridiron",
       "repo": "galaxy-gridiron",
       "category": "SportsApplication",
@@ -108,6 +109,7 @@
     },
     {
       "id": "swipe-clean",
+      "appId": "JCA-0002",
       "name": "Swipe Clean",
       "repo": "swipe-clean",
       "category": "UtilitiesApplication",
@@ -204,6 +206,7 @@
     },
     {
       "id": "kanban-board",
+      "appId": "JCA-0003",
       "name": "Kanban Board",
       "repo": "kanban-board",
       "category": "BusinessApplication",
@@ -287,6 +290,7 @@
     },
     {
       "id": "cat-health-dashboard",
+      "appId": "JCA-0004",
       "name": "Cat Health Dashboard",
       "repo": "cat-health-dashboard",
       "category": "HealthApplication",
@@ -370,6 +374,7 @@
     },
     {
       "id": "pantry-chef",
+      "appId": "JCA-0005",
       "name": "Pantry Chef",
       "repo": "pantry-chef",
       "category": "LifestyleApplication",
