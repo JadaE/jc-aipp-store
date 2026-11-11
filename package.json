@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node build.mjs && node test.mjs",
-    "previews": "node build.mjs && node tools/previews.mjs"
+    "test": "node build.mjs && node test.mjs && node test-submissions.mjs",
+    "previews": "node build.mjs && node tools/previews.mjs",
+    "batch:dry": "node tools/submissions-batch.mjs --dry-run"
   },
   "devDependencies": {
     "axe-core": "^4.14.0",

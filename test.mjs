@@ -6,6 +6,7 @@ import path from 'node:path';
 import { execSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { resolveSiteUrl } from './siteurl.mjs';
+import { SECRET_PATTERNS } from './tools/scans.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
 const dist = path.join(root, 'dist');
@@ -268,16 +269,7 @@ let files = [];
 try { files = execSync('git ls-files -co --exclude-standard', { cwd: root }).toString().split('\n').filter(Boolean).map((f) => path.join(root, f)); }
 catch { files = walk(root).filter((f) => !f.includes('/node_modules/') && !f.includes('/.git/')); }
 files = [...new Set([...files, ...walk(dist)])].filter((f) => fs.existsSync(f) && !/\.(png|webp|jpg|jpeg|gif|ico)$/.test(f));
-const patterns = [
-  [/https?:\/\/[^\s"'<>)]*\.here\.now/i, 'here.now URL'],
-  [/\b[a-z0-9-]+\.here\.now\b/, 'here.now host'],
-  [/github_pat_[A-Za-z0-9_]{20,}|\bgh[pousr]_[A-Za-z0-9]{30,}/, 'GitHub token'],
-  [/\bsk-[A-Za-z0-9_-]{20,}/, 'API secret key'],
-  [/AKIA[0-9A-Z]{16}/, 'AWS key'],
-  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key'],
-  [/"apiKey"\s*:\s*"(?!YOUR_)[^"]+"/, 'apiKey value'],
-  [/HERENOW_API_KEY\s*=\s*["']?[A-Za-z0-9]{12,}/, 'hardcoded HERENOW_API_KEY'],
-];
+const patterns = SECRET_PATTERNS; // shared with the submissions batch (tools/scans.mjs)
 const localCfg = path.join(root, 'config.local.json');
 const localValues = [];
 if (fs.existsSync(localCfg)) {

@@ -9,5 +9,24 @@
   },
   "release": {
     "gateScript": "/path/to/release-gate.sh (or set RELEASE_GATE_SH in the environment)"
+  },
+  "submissions": {
+    "approver": "store-owner",
+    "approverNote": "Who approves listings (placeholder: the store owner). Change here or override in config.local.json.",
+    "licenseRequired": false,
+    "reservedIds": {
+      "from": "JCA-0001",
+      "to": "JCA-0005",
+      "note": "Reserved for the store owner's own apps."
+    },
+    "frontOfficeEmail": "TBD",
+    "dataRepo": "JadaE/aipp-store-data",
+    "dataRepoBase": "master",
+    "batchSize": 10,
+    "perEmailPerHour": 3,
+    "linkCheckTimeoutMs": 8000,
+    "stateFile": "OPTIONAL: a path outside the repo (default: ~/.aipp-store/submissions-state.json)",
+    "privateTerms": [],
+    "privateTermsNote": "Put private names and terms to block (family words, real usernames, league or pet names) in config.local.json only, never here."
   }
 }

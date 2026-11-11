@@ -167,3 +167,34 @@ dl.facts dt{color:var(--muted)}dl.facts dd{margin:0}
 .wip{display:inline-block;vertical-align:middle;font-size:.75rem;font-weight:700;line-height:1;padding:.3rem .55rem;border-radius:999px;background:#ffd166;color:#3a2a00;letter-spacing:.01em}
 .author{margin:.25rem 0 0;font-size:.9rem;color:var(--muted)}
 .site-footer .disclaimer{margin-top:.75rem;font-size:.8rem;color:var(--muted)}
+/* JC-28 submission form */
+.footer-links{margin:.5rem 0 0}
+.app-hero.no-icon{grid-template-columns:1fr}
+.setup ul{margin:.25rem 0 0;padding-left:1.2rem}.setup li{margin:.4rem 0}
+.setup code,.submit-form code{font-size:.9em;overflow-wrap:anywhere}
+.form-section{border:1px solid var(--line);min-width:0}
+.form-section>legend{font-size:1.15rem;font-weight:700;padding:0 .4rem}
+.field{margin:0 0 1rem;border:0;padding:0;min-width:0}
+.field>label,.field>legend{display:block;font-weight:600;margin:0 0 .25rem}
+.field input[type=text],.field input[type=email],.field input[type=url],.field select,.field textarea{box-sizing:border-box;width:100%;min-height:44px;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line-strong);border-radius:10px;padding:.55rem .75rem}
+.field textarea{min-height:6rem;resize:vertical}
+.field input:focus-visible,.field select:focus-visible,.field textarea:focus-visible,.check input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.field [aria-invalid=true]{border-color:#ff8a8a;box-shadow:0 0 0 1px #ff8a8a}
+.check{display:flex;align-items:flex-start;gap:.6rem;flex-wrap:wrap;margin:.35rem 0}
+.check input{width:1.3rem;height:1.3rem;margin:.15rem 0 0;flex:none;accent-color:var(--accent)}
+.check label{flex:1 1 0;min-width:12rem}
+.check .hint,.check .field-error{flex-basis:100%}
+.hint{font-size:.9rem;color:var(--muted);margin:0 0 .35rem}
+.req{color:var(--text);font-weight:700}
+.field-error{color:var(--error,#ffb3b3);font-weight:600;font-size:.92rem;margin:.3rem 0 0}
+:root[data-theme=light] .field-error{color:#a3141a}
+:root[data-theme=light] .field [aria-invalid=true]{border-color:#a3141a;box-shadow:0 0 0 1px #a3141a}
+.error-summary{border:2px solid #ff8a8a;border-radius:var(--radius);padding:1rem 1.25rem;margin:0 0 1.25rem;background:var(--surface)}
+:root[data-theme=light] .error-summary{border-color:#a3141a}
+.error-summary h2{font-size:1.1rem;margin:0 0 .5rem}
+.error-summary ul{margin:0;padding-left:1.2rem}
+.hp-field{position:absolute!important;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+.form-actions{margin:1rem 0}
+.form-actions .btn{font:inherit;font-weight:700;cursor:pointer;border:0}
+.form-actions .btn:disabled{opacity:.6;cursor:progress}
+.form-status{min-height:1.6em;font-weight:600}

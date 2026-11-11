@@ -60,3 +60,42 @@ downloads) and a build change. Unlisted app URLs never go in this repo.
 
 ## Release notes
 See `CHANGELOG.md`.
+
+## Developer submissions (JC-28)
+`/submit/` is the public submission form. Its fields come from `tools/submission-schema.mjs`, which also generates the
+here.now Site Data manifest `dist/.herenow/data.json`: one `submissions` collection with **public insert only**, owner-only
+read/update/delete (records hold contact emails), a `3/hour/ip` write limit and https-only URL fields. The manifest only
+takes effect when a reviewed build is published. The form has a hidden honeypot field (`hp_website`) and client-side
+checks; the batch checks everything again.
+
+The daily batch, `tools/submissions-batch.mjs`, reads new records with the owner API, drops honeypot hits, anything over
+`perEmailPerHour` per email and duplicates (by record ID, repo URL, or email + app name), then checks up to `batchSize`
+records: required fields, link rules and reachability, secret / private-link / personal-name scans (shared with
+`test.mjs` in `tools/scans.mjs`) and a hidden-instruction scan. A hidden-instruction hit quarantines the record; reports
+name only the record ID and rule. Records that pass get the next free `JCA-` ID (the reserved range is skipped) and go into
+one **draft** PR in the data repo. A person merging that PR is the publish step; the batch never merges, emails or edits
+records.
+
+```bash
+node tools/submissions-batch.mjs --dry-run --no-network --fixtures records.json --out /tmp/batch   # test run, writes only to --out
+node tools/submissions-batch.mjs --dry-run       # reads live records (read-only), opens nothing
+node tools/submissions-batch.mjs                 # live: opens the draft PR and updates the local state file
+```
+
+Settings live under `submissions` in `config.example.json` (approver, `licenseRequired`, reserved IDs, `frontOfficeEmail`,
+data repo, batch size, per-email limit). Override them in the gitignored `config.local.json`; private names and terms to
+block go in `config.local.json` `submissions.privateTerms` only. The batch's state file (processed record IDs, app ID to
+record ID) is kept outside the repo.
+
+### Verifying the live collection (after an approved publish)
+Public create must work and public read must not:
+```bash
+SITE="$SITE_URL"   # the store's public origin (from config.local.json); SLUG is its site slug
+curl -s -o /dev/null -w '%{http_code}\n' "$SITE/.herenow/data/submissions"                 # expect 401/403, never 200
+curl -s -o /dev/null -w '%{http_code}\n' "$SITE/.herenow/data/submissions/ANY_ID"          # expect 401/403/404, never 200
+curl -s -X POST "$SITE/.herenow/data/submissions" -H "Origin: $SITE" -H 'content-type: application/json' \
+  -H "Idempotency-Key: $(uuidgen)" -d @probe.json                                           # expect 201 + {record:{id}}
+curl -s -o /dev/null -w '%{http_code}\n' "$SITE/.herenow/data/submissions/$PROBE_ID"         # expect 401/403/404 (not readable)
+curl -s "https://here.now/api/v1/publishes/$SLUG/data/submissions?limit=5" -H "Authorization: Bearer $HERENOW_API_KEY"  # owner sees it
+curl -s -X DELETE "https://here.now/api/v1/publishes/$SLUG/data/submissions/$PROBE_ID" -H "Authorization: Bearer $HERENOW_API_KEY"  # clean up
+```
