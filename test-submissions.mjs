@@ -74,6 +74,23 @@ const html = fs.existsSync(formFile) ? fs.readFileSync(formFile, 'utf8') : '';
   expect(/okay first/i.test(html), 'form says apps need the store owner\'s okay first');
 }
 
+// ---------- Google Sheet sync script (tools/sheets-sync.gs, runs in the owner's own Apps Script)
+section('submissions: sheet sync script');
+{
+  const vm = await import('node:vm');
+  const src = fs.readFileSync(path.join(root, 'tools/sheets-sync.gs'), 'utf8');
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx);
+  const names = FIELDS.filter((f) => f.kind !== 'honeypot').map((f) => f.name);
+  expect(JSON.stringify([...ctx.FIELDS]) === JSON.stringify(names) && ctx.HONEYPOT === HONEYPOT, 'sheet columns match the form fields');
+  const seen = { old1: true };
+  const rows = ctx.newRows_([{ id: 'old1', data: {} }, { id: 'n1', created_at: 'x', data: { app_name: '=HYPERLINK("http://evil")', summary: '+1', dev_name: 'A'.repeat(9000) } }, { id: 'n2', data: { [HONEYPOT]: 'bot' } }, { id: 7, data: {} }, null], seen);
+  expect(rows.length === 1 && rows[0][0] === 'n1' && rows[0].length === names.length + 2, 'one new row; seen IDs, honeypot hits and bad records skipped');
+  const col = (n) => rows[0][2 + names.indexOf(n)];
+  expect(col('app_name').startsWith("'=") && col('summary') === "'+1" && col('dev_name').length === 5000, 'cells are plain text: formulas neutralized, length capped');
+  expect(ctx.newRows_([{ id: 'n1', data: {} }], seen).length === 0, 'no duplicate rows on the next run');
+  expect(!/[A-Za-z0-9_-]{32,}/.test(src.replace(/https?:\/\/\S+/g, '')) && !/\.here\.now/.test(src), 'script holds no keys or site slug');
+}
+
 // ---------- config
 section('submissions: config');
 {
