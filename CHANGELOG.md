@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.12
+- No more source .zip downloads: Swipe Clean, Kanban Board and Cat Health Dashboard no longer show a Download button (the repo link and Fork are how to get the code). Swipe Clean has no public APK release yet.
+- Download buttons now only appear for an app download and are labeled just "Download".
+
 ## v0.0.11
 - Swipe Clean: removed the web demo from its page (the demo sentence, the Web platform and its note). Android only now.
 
