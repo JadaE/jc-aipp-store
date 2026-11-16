@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.15
+- The invite-only /submit/ form now only requires name, email, app name, a short summary, and one link. Everything else is optional, and any https link works for images and downloads.
+
 ## v0.0.14
 - New invite-only developer submission form at /submit/ (not linked from the footer or sitemap, noindex). Submissions are stored owner-read only; the batch stays dry-run and only pre-approved developers are processed.
 - Each app page shows its App ID and a "Request an edit" panel (edit requests by email are coming soon).

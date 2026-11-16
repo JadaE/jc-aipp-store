@@ -16,7 +16,6 @@
         },
         "github_handle": {
           "type": "string",
-          "required": true,
           "maxLength": 39,
           "trim": true
         },
@@ -34,19 +33,16 @@
         },
         "category": {
           "type": "string",
-          "required": true,
           "maxLength": 40,
           "trim": true
         },
         "about": {
           "type": "string",
-          "required": true,
           "maxLength": 1500,
           "trim": true
         },
         "platforms": {
           "type": "string",
-          "required": true,
           "maxLength": 40,
           "trim": true
         },
@@ -67,25 +63,21 @@
         },
         "version": {
           "type": "string",
-          "required": true,
           "maxLength": 20,
           "trim": true
         },
         "whats_new": {
           "type": "string",
-          "required": true,
           "maxLength": 600,
           "trim": true
         },
         "built_with": {
           "type": "string",
-          "required": true,
           "maxLength": 80,
           "trim": true
         },
         "how_it_works": {
           "type": "string",
-          "required": true,
           "maxLength": 400,
           "trim": true
         },
@@ -95,7 +87,6 @@
         },
         "icon_url": {
           "type": "url",
-          "required": true,
           "maxLength": 300,
           "allowedProtocols": [
             "https"
@@ -103,13 +94,11 @@
         },
         "icon_alt": {
           "type": "string",
-          "required": true,
           "maxLength": 120,
           "trim": true
         },
         "shot1_url": {
           "type": "url",
-          "required": true,
           "maxLength": 300,
           "allowedProtocols": [
             "https"
@@ -117,13 +106,11 @@
         },
         "shot1_alt": {
           "type": "string",
-          "required": true,
           "maxLength": 160,
           "trim": true
         },
         "shot2_url": {
           "type": "url",
-          "required": true,
           "maxLength": 300,
           "allowedProtocols": [
             "https"
@@ -131,7 +118,6 @@
         },
         "shot2_alt": {
           "type": "string",
-          "required": true,
           "maxLength": 160,
           "trim": true
         },
@@ -190,7 +176,6 @@
         },
         "repo_url": {
           "type": "url",
-          "required": true,
           "maxLength": 200,
           "allowedProtocols": [
             "https"
@@ -229,15 +214,15 @@
         },
         "agree_owner": {
           "type": "boolean",
-          "required": true
+          "default": false
         },
         "agree_clean": {
           "type": "boolean",
-          "required": true
+          "default": false
         },
         "agree_disclaimer": {
           "type": "boolean",
-          "required": true
+          "default": false
         },
         "hp_website": {
           "type": "string",

@@ -224,16 +224,10 @@ function submitPage() {
     canonicalPath: 'submit/',
     noindex: true,
     body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${rel}index.html">All apps</a> <span aria-hidden="true">/</span> <span aria-current="page">Submit an app</span></nav>
-<section class="app-hero no-icon" aria-labelledby="submit-title"><div><h1 id="submit-title">Submit an app</h1><p>This store is for a few friends' apps, by invite. Ask the store owner and get their okay first; submissions for apps that aren't pre-approved are skipped without review. Fill in everything your app page needs. Nothing goes live automatically: each submission gets an app ID, passes automatic checks, then a person reviews it. Replies can take about a week.</p></div></section>
+<section class="app-hero no-icon" aria-labelledby="submit-title"><div><h1 id="submit-title">Submit an app</h1><p>This form is invite only, so get the store owner's okay first. The owner reviews every submission before anything goes live. Links are fine for images and downloads (Google Photos, Drive or Imgur work); uploads aren't supported.</p></div></section>
 <section class="panel setup" aria-labelledby="setup-title">
   <h2 id="setup-title">Before you start</h2>
-  <ul>
-    <li><strong>Download link:</strong> link to the release page for your app (GitHub Releases or your site), not a source .zip or a direct file. People get your code from the repo link and Fork, and the Download button opens your release page.</li>
-    <li><strong>Ownership proof:</strong> after you get your app ID, add a file named <code>jc-aipp-store.txt</code> containing that ID to the root of your repo. Your GitHub handle must own the repo.</li>
-    <li><strong>No personal labels:</strong> use a brand or handle everywhere: app name, author line, screenshots and the signing certificate's owner field (for example, not <code>O="Your Name (personal)"</code>). Check the certificate with <code>keytool -printcert -jarfile app.apk</code> and read the Owner line.</li>
-    <li><strong>Clean build:</strong> no API keys, private update links or test accounts in the app or the screenshots. Use sample data in screenshots.</li>
-    <li><strong>Images:</strong> give links to the icon and screenshots (PNG, WebP or JPEG; no SVG) in your public repo; files can't be uploaded here.</li>
-  </ul>
+  <p>Only the fields marked * are required: your name or handle, an email, the app name, a one-line summary and at least one link. Fill in more if you like. Keep keys, private links and personal data out of the app and the listing.</p>
   <p class="privacy"><strong>Privacy:</strong> your contact email is stored privately with this site's form storage and seen only by the store owner and the store's review tools. It is never shown on the store or put in any repo. We aim to delete submissions within 90 days after review. To have yours deleted sooner, reply to your confirmation email.</p>
 </section>
 <form class="submit-form" id="submit-form" novalidate data-endpoint="${rel}.herenow/data/${COLLECTION}" data-form-version="${FORM_VERSION}" data-max-bytes="${RECORD_MAX_BYTES}">
