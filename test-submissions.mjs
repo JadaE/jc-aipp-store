@@ -88,6 +88,11 @@ section('submissions: sheet sync script');
   const col = (n) => rows[0][2 + names.indexOf(n)];
   expect(col('app_name').startsWith("'=") && col('summary') === "'+1" && col('dev_name').length === 5000, 'cells are plain text: formulas neutralized, length capped');
   expect(ctx.newRows_([{ id: 'n1', data: {} }], seen).length === 0, 'no duplicate rows on the next run');
+  const bypasses = [' =HYPERLINK("x")', '\n=1', '\t=1', '\r=1', '\u00a0=1', '\u200b=1', '\ufeff=1', '\u3000=1', '\uff1dIMPORTXML("x")', '\uff0b1', '\uff0d1', '\uff20x', '=1', '+1', '-1', '@x'];
+  expect(bypasses.every((b) => ctx.cell_(b).startsWith("'")), 'leading space, newline, NBSP, zero-width, BOM, fullwidth = + - @ are all prefixed');
+  expect(ctx.cell_('My App') === 'My App' && ctx.cell_('0123') === '0123', 'normal text is unchanged');
+  expect(ctx.newRows_([{ id: '', data: {} }, { id: 'a b', data: {} }, { id: 'x'.repeat(65), data: {} }], {}).length === 0, 'empty or odd record IDs skipped');
+  expect(/^\/\*\* @OnlyCurrentDoc \*\//.test(src) && /setNumberFormat\('@'\)[\s\S]*setValues/.test(src), 'script limited to this Sheet; rows written as plain text');
   expect(!/[A-Za-z0-9_-]{32,}/.test(src.replace(/https?:\/\/\S+/g, '')) && !/\.here\.now/.test(src), 'script holds no keys or site slug');
 }
 
