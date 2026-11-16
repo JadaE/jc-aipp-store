@@ -3,9 +3,12 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { resolveSiteUrl } from './siteurl.mjs';
+import { resolveFrontOfficeEmail, editRequestPanel } from './tools/edit-requests.mjs';
+import { FIELDS, COLLECTION, FORM_VERSION, RECORD_MAX_BYTES, PLATFORMS as SUBMIT_PLATFORMS, manifest as siteDataManifest } from './tools/submission-schema.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
-const out = path.join(root, 'dist');
+const out = process.env.OUT_DIR ? path.resolve(process.env.OUT_DIR) : path.join(root, 'dist'); // OUT_DIR: tests only
+const frontOffice = resolveFrontOfficeEmail(root);
 const site = JSON.parse(fs.readFileSync(path.join(root, 'data/site.json'), 'utf8'));
 const { apps } = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8'));
 
@@ -35,13 +38,13 @@ function lockup(rel) {
   return `<div class="home-lockup">${img(L.dark, 'logo-lockup logo-dark')}${img(L.light, 'logo-lockup logo-light')}</div>`;
 }
 
-function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
+function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '', noindex = false }) {
   const canonical = `${base}/${canonicalPath}`;
   return `<!DOCTYPE html>
 <html lang="${site.lang}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">${noindex ? '\n<meta name="robots" content="noindex">' : ''}
 <script>try{if(localStorage.getItem("aipp-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
@@ -176,6 +179,7 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
     <section class="panel" aria-labelledby="about-title" data-section="about"><h2 id="about-title">About</h2>${a.about.map((p) => `<p>${esc(p)}</p>`).join('')}</section>
     <section class="panel updates" aria-labelledby="updates-title" data-section="updates"><h2 id="updates-title">Updates</h2>${updates}</section>
     <section class="panel soon" aria-labelledby="forks-title"><h2 id="forks-title">Vetted forks</h2><p>Vetted forks coming soon. Forks that pass review will be listed here.</p></section>
+    ${editRequestPanel(a, frontOffice, esc)}
   </div>
   <aside class="panel" aria-labelledby="facts-title">
     <h2 id="facts-title">Details</h2>
@@ -192,6 +196,62 @@ ${a.screenshots.map((s, i) => `  <li class="${s.width > s.height ? 'wide' : 'tal
   });
 }
 
+// ---- developer submission form (JC-28). Posts to the owner-only Site Data collection on this same site.
+function submitPage() {
+  const rel = '../';
+  const field = (f) => {
+    const id = `f-${f.name}`, hid = `${id}-help`, eid = `${id}-err`;
+    const help = f.help ? `<p class="hint" id="${hid}">${esc(f.help)}</p>` : '';
+    const desc = `${f.help ? hid + ' ' : ''}${eid}`;
+    const req = f.required ? ' required' : '';
+    const star = f.required && f.kind !== 'checkbox' ? ' <span class="req" aria-hidden="true">*</span>' : '';
+    const data = `${f.minLength ? ` minlength="${f.minLength}"` : ''}${f.pattern ? ` data-pattern="${esc(f.pattern)}"` : ''}${f.pairsWith ? ` data-pairs-with="${f.pairsWith}"` : ''}`;
+    const err = `<p class="field-error" id="${eid}" hidden></p>`;
+    if (f.kind === 'checkbox') return `<div class="field check"><input type="checkbox" id="${id}" name="${f.name}" aria-describedby="${desc}"${req}><label for="${id}">${esc(f.label)}</label>${help}${err}</div>`;
+    if (f.kind === 'platforms') return `<fieldset class="field platforms" id="${id}" aria-describedby="${eid}" data-group="${f.name}"><legend>${esc(f.label)}${star}</legend>${SUBMIT_PLATFORMS.map(([v, l]) => `<div class="check"><input type="checkbox" id="${id}-${v}" name="${f.name}[]" value="${v}"><label for="${id}-${v}">${esc(l)}</label></div>`).join('')}${err}</fieldset>`;
+    if (f.kind === 'select') return `<div class="field"><label for="${id}">${esc(f.label)}${star}</label>${help}<select id="${id}" name="${f.name}" aria-describedby="${desc}"${req}>${f.required ? '<option value="">Choose one</option>' : ''}${f.options.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>${err}</div>`;
+    if (f.kind === 'textarea') return `<div class="field"><label for="${id}">${esc(f.label)}${star}</label>${help}<textarea id="${id}" name="${f.name}" rows="4" maxlength="${f.maxLength}" aria-describedby="${desc}"${req}${data}></textarea>${err}</div>`;
+    const type = f.kind === 'email' ? 'email' : f.kind === 'url' ? 'url' : 'text';
+    const ac = f.autocomplete ? ` autocomplete="${f.autocomplete}"` : type === 'url' ? ' inputmode="url" autocomplete="off"' : ' autocomplete="off"';
+    return `<div class="field"><label for="${id}">${esc(f.label)}${star}</label>${help}<input type="${type}" id="${id}" name="${f.name}" maxlength="${f.maxLength}"${ac} aria-describedby="${desc}"${req}${data}${type === 'url' ? ' placeholder="https://"' : ''}>${err}</div>`;
+  };
+  const group = (sec, title, intro = '') => `<fieldset class="panel form-section"><legend>${esc(title)}</legend>${intro}${FIELDS.filter((f) => f.section === sec).map(field).join('\n')}</fieldset>`;
+  const hp = FIELDS.find((f) => f.kind === 'honeypot');
+  return page({
+    title: `Submit an app | ${site.name}`,
+    description: 'Invite only: list a pre-approved app on the store.',
+    rel,
+    canonicalPath: 'submit/',
+    noindex: true,
+    body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${rel}index.html">All apps</a> <span aria-hidden="true">/</span> <span aria-current="page">Submit an app</span></nav>
+<section class="app-hero no-icon" aria-labelledby="submit-title"><div><h1 id="submit-title">Submit an app</h1><p>This store is for a few friends' apps, by invite. Ask the store owner and get their okay first; submissions for apps that aren't pre-approved are skipped without review. Fill in everything your app page needs. Nothing goes live automatically: each submission gets an app ID, passes automatic checks, then a person reviews it. Replies can take about a week.</p></div></section>
+<section class="panel setup" aria-labelledby="setup-title">
+  <h2 id="setup-title">Before you start</h2>
+  <ul>
+    <li><strong>Download link:</strong> link to the release page for your app (GitHub Releases or your site), not a source .zip or a direct file. People get your code from the repo link and Fork, and the Download button opens your release page.</li>
+    <li><strong>Ownership proof:</strong> after you get your app ID, add a file named <code>jc-aipp-store.txt</code> containing that ID to the root of your repo. Your GitHub handle must own the repo.</li>
+    <li><strong>No personal labels:</strong> use a brand or handle everywhere: app name, author line, screenshots and the signing certificate's owner field (for example, not <code>O="Your Name (personal)"</code>). Check the certificate with <code>keytool -printcert -jarfile app.apk</code> and read the Owner line.</li>
+    <li><strong>Clean build:</strong> no API keys, private update links or test accounts in the app or the screenshots. Use sample data in screenshots.</li>
+    <li><strong>Images:</strong> give links to the icon and screenshots (PNG, WebP or JPEG; no SVG) in your public repo; files can't be uploaded here.</li>
+  </ul>
+  <p class="privacy"><strong>Privacy:</strong> your contact email is stored privately with this site's form storage and seen only by the store owner and the store's review tools. It is never shown on the store or put in any repo. We aim to delete submissions within 90 days after review. To have yours deleted sooner, reply to your confirmation email.</p>
+</section>
+<form class="submit-form" id="submit-form" novalidate data-endpoint="${rel}.herenow/data/${COLLECTION}" data-form-version="${FORM_VERSION}" data-max-bytes="${RECORD_MAX_BYTES}">
+<div class="error-summary" id="error-summary" tabindex="-1" role="alert" hidden><h2>Please fix these fields</h2><ul></ul></div>
+<p class="hint">Fields marked <span class="req" aria-hidden="true">*</span><span class="visually-hidden">with an asterisk</span> are required.</p>
+${group('dev', 'About you')}
+${group('app', 'The app')}
+${group('media', 'Icon and screenshots')}
+${group('links', 'Links')}
+${group('agree', 'Agreements')}
+<div class="hp-field" aria-hidden="true"><label for="f-${hp.name}">${esc(hp.label)}</label><input type="text" id="f-${hp.name}" name="${hp.name}" tabindex="-1" autocomplete="off" maxlength="${hp.maxLength}"></div>
+<div class="form-actions"><button type="submit" class="btn primary">Submit app</button></div>
+<div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+</form>`,
+    scripts: `<script src="${asset(rel, 'js/submit.js')}" defer></script>\n`,
+  });
+}
+
 // ---- write
 fs.rmSync(out, { recursive: true, force: true });
 fs.cpSync(path.join(root, 'static'), out, { recursive: true });
@@ -203,7 +263,12 @@ for (const a of apps) {
   fs.mkdirSync(path.join(out, 'apps', a.id), { recursive: true });
   fs.writeFileSync(path.join(out, 'apps', a.id, 'index.html'), appPage(a));
 }
-const urls = ['', ...apps.map((a) => `apps/${a.id}/`)];
+fs.mkdirSync(path.join(out, 'submit'), { recursive: true });
+fs.writeFileSync(path.join(out, 'submit', 'index.html'), submitPage());
+// here.now Site Data manifest (owner-only read). Applied only when Review & Release publishes this build.
+fs.mkdirSync(path.join(out, '.herenow'), { recursive: true });
+fs.writeFileSync(path.join(out, '.herenow', 'data.json'), JSON.stringify(siteDataManifest(), null, 2) + '\n');
+const urls = ['', ...apps.map((a) => `apps/${a.id}/`)]; // /submit/ is invite only: not in the sitemap or footer
 fs.writeFileSync(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${esc(`${base}/${u}`)}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
 console.log(`built ${apps.length} app pages -> ${path.relative(process.cwd(), out) || out} (site URL from ${siteUrlSource})`);
