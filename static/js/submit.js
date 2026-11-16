@@ -28,7 +28,7 @@
     var v = el.type === 'checkbox' ? el.checked : el.value.trim();
     if (el.closest('[data-group]')) {
       var any = form.querySelectorAll('input[name="' + el.name + '"]:checked').length;
-      return any ? '' : 'Choose at least one platform.';
+      return '';
     }
     if (el.type === 'checkbox') return el.required && !v ? 'Please tick this box to continue.' : '';
     var pair = el.getAttribute('data-pairs-with');
@@ -43,18 +43,11 @@
     if (el.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return 'Enter an email address like name@example.com.';
     if (el.type === 'url') {
       if (!isHttps(v)) return 'Enter a full https:// link.';
-      if (el.name !== 'icon_url' && !/^shot\d_url$/.test(el.name) && /\.apk(?:[?#]|$)/i.test(v)) return 'Link to your release page, not straight to the .apk file.';
-      if (el.name === 'download_page_url' && /(?:\.zip(?:[?#]|$)|\/archive\/)/i.test(v)) return 'Link to your release page, not a source .zip. People get your code from your repo.';
     }
     var p = el.getAttribute('data-pattern');
     if (p && !new RegExp(p).test(v)) return el.name === 'version' ? 'Use numbers like 1.2.0.' : el.name === 'repo_url' ? 'Use https://github.com/your-handle/your-app.' : el.name === 'github_handle' ? 'Use your GitHub handle, letters, numbers and dashes only.' : 'Check the format of this field.';
     if (el.name === 'about' && v.split(/\n\s*\n/).filter(Boolean).length > 3) return 'Use 3 paragraphs or fewer.';
     if (el.name === 'whats_new' && v.split('\n').filter(function (l) { return l.trim(); }).length > 5) return 'Use 5 bullets or fewer.';
-    if (el.name === 'repo_url') {
-      var h = form.elements.github_handle && form.elements.github_handle.value.trim().toLowerCase();
-      var m = v.match(/^https:\/\/github\.com\/([^/]+)\//i);
-      if (h && m && m[1].toLowerCase() !== h) return 'The repo must belong to the GitHub handle above.';
-    }
     return '';
   }
 
@@ -88,6 +81,12 @@
       setError(el, msg);
       if (msg) problems.push({ el: el, msg: msg });
     });
+    // One link is required: repo, download, website or App Store.
+    var LINKS = ['repo_url', 'download_page_url', 'open_web_url', 'ios_app_store_url'];
+    if (!LINKS.some(function (n) { return form.elements[n] && form.elements[n].value.trim(); })) {
+      var first = form.elements.repo_url, lm = 'Add at least one link: repo, download page, website or App Store.';
+      setError(first, lm); problems.push({ el: first, msg: lm });
+    }
     var list = summary.querySelector('ul');
     list.textContent = '';
     if (problems.length) {
