@@ -114,7 +114,7 @@
       "summary": "Swipe through your photos to decide what to keep and what to delete.",
       "about": [
         "Swipe Clean helps you tidy your photo library one swipe at a time: swipe left to put a photo in your Delete pile, right to keep it. Undo, combos and a daily streak keep it quick and fun.",
-        "It never deletes anything by itself and never picks photos for you. You look over your Delete pile, then remove those photos yourself with your phone's own delete prompt (or in Google Photos on the web). On the web you can try a demo with sample photos."
+        "It never deletes anything by itself and never picks photos for you. You look over your Delete pile, then remove those photos yourself with your phone's own delete prompt."
       ],
       "updates": [
         {
@@ -143,16 +143,11 @@
         }
       ],
       "technical": [
-        "Android app built with Expo / React Native, with a small Kotlin module that talks to MediaStore and uses the system trash and delete dialogs.",
-        "The Web version is a browser demo for Google Photos using the Picker API with a read-only scope. It runs in demo mode with generated placeholder photos until you add your own Google OAuth client ID."
+        "Android app built with Expo / React Native, with a small Kotlin module that talks to MediaStore and uses the system trash and delete dialogs."
       ],
       "platforms": [
-        "android",
-        "web"
+        "android"
       ],
-      "platformNotes": {
-        "web": "A browser demo with sample photos; connecting Google Photos needs extra setup."
-      },
       "builtWith": "Grok Bot from Cursor",
       "version": "0.0.6",
       "versionSource": "git tag v0.0.6; android/app/src/version.ts and app.json (expo.version)",
