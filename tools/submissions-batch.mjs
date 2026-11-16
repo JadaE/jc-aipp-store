@@ -134,6 +134,7 @@ export function linkProblems(name, value, f) {
   if (/(^|\.)here\.now$/.test(h)) out.push(`${name}: here.now links need owner approval`);
   if (u.port && u.port !== '443') out.push(`${name}: no custom ports`);
   if (name !== 'icon_url' && !/^shot\d_url$/.test(name) && /\.apk$/i.test(u.pathname)) out.push(`${name}: link to the release page, never a direct .apk`);
+  if (name === 'download_page_url' && (/\.zip$/i.test(u.pathname) || /\/archive\//.test(u.pathname))) out.push(`${name}: link to the release page, never a source .zip`);
   if (name === 'repo_url') {
     const m = u.pathname.match(/^\/([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)\/?$/);
     if (h !== 'github.com' || !m) out.push('repo_url: must be https://github.com/<handle>/<repo>');

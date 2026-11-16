@@ -228,7 +228,7 @@ function submitPage() {
 <section class="panel setup" aria-labelledby="setup-title">
   <h2 id="setup-title">Before you start</h2>
   <ul>
-    <li><strong>Download link:</strong> link to a release on your own page (GitHub Releases or your site). The store never hosts or links straight to an APK file; the Download button opens your release page.</li>
+    <li><strong>Download link:</strong> link to the release page for your app (GitHub Releases or your site), not a source .zip or a direct file. People get your code from the repo link and Fork, and the Download button opens your release page.</li>
     <li><strong>Ownership proof:</strong> after you get your app ID, add a file named <code>jc-aipp-store.txt</code> containing that ID to the root of your repo. Your GitHub handle must own the repo.</li>
     <li><strong>No personal labels:</strong> use a brand or handle everywhere: app name, author line, screenshots and the signing certificate's owner field (for example, not <code>O="Your Name (personal)"</code>). Check the certificate with <code>keytool -printcert -jarfile app.apk</code> and read the Owner line.</li>
     <li><strong>Clean build:</strong> no API keys, private update links or test accounts in the app or the screenshots. Use sample data in screenshots.</li>

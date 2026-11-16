@@ -55,7 +55,7 @@ export const FIELDS = [
 
   F('repo_url', 'Public source repo URL', { section: 'links', kind: 'url', required: true, maxLength: 200, pattern: '^https://github\\.com/[A-Za-z0-9-]+/[A-Za-z0-9._-]+/?$', help: 'https://github.com/your-handle/your-app' }),
   F('license', 'License', { section: 'links', kind: 'select', options: LICENSES, maxLength: 40 }),
-  F('download_page_url', 'Download page URL', { section: 'links', kind: 'url', maxLength: 300, help: 'Your own release page (GitHub Releases or your site). Not a direct .apk file link.' }),
+  F('download_page_url', 'Download page URL', { section: 'links', kind: 'url', maxLength: 300, help: 'Your own release page (GitHub Releases or your site). Not a source .zip or a direct .apk file link.' }),
   F('download_size', 'Download size (optional)', { section: 'links', maxLength: 20, help: 'For example: 48 MB.' }),
   F('open_web_url', 'Open website URL (optional)', { section: 'links', kind: 'url', maxLength: 300, help: 'Only for a full, working web version.' }),
   F('ios_app_store_url', 'iOS App Store URL (optional)', { section: 'links', kind: 'url', maxLength: 300, pattern: '^https://apps\\.apple\\.com/.+' }),

@@ -140,6 +140,7 @@ const withData = (r, d) => ({ ...r, data: { ...r.data, ...d } });
     ['clean record passes', good(), (c) => !c.problems.length && !c.scans.length && !c.hidden.length],
     ['missing required fields', withData(good(), { app_name: '', icon_alt: undefined, agree_owner: false }), (c) => ['app_name: required', 'icon_alt: required', 'agree_owner: must be ticked'].every((p) => c.problems.includes(p))],
     ['direct .apk download rejected', withData(good(), { download_page_url: 'https://example.com/app.apk' }), (c) => c.problems.some((p) => /\.apk/.test(p))],
+    ['source .zip download rejected', withData(good(), { download_page_url: 'https://github.com/dev/app/archive/refs/tags/v1.0.0.zip' }), (c) => c.problems.some((p) => /\.zip/.test(p))],
     ['http link rejected', withData(good(), { download_page_url: 'http://example.com/releases' }), (c) => c.problems.some((p) => /https/.test(p))],
     ['IP-address link rejected', withData(good(), { open_web_url: 'https://192.168.1.5/app' }), (c) => c.problems.some((p) => /IP/.test(p))],
     ['link shortener rejected', withData(good(), { download_page_url: 'https://bit.ly/abc' }), (c) => c.problems.some((p) => /shortener/.test(p))],

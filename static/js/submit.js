@@ -44,6 +44,7 @@
     if (el.type === 'url') {
       if (!isHttps(v)) return 'Enter a full https:// link.';
       if (el.name !== 'icon_url' && !/^shot\d_url$/.test(el.name) && /\.apk(?:[?#]|$)/i.test(v)) return 'Link to your release page, not straight to the .apk file.';
+      if (el.name === 'download_page_url' && /(?:\.zip(?:[?#]|$)|\/archive\/)/i.test(v)) return 'Link to your release page, not a source .zip. People get your code from your repo.';
     }
     var p = el.getAttribute('data-pattern');
     if (p && !new RegExp(p).test(v)) return el.name === 'version' ? 'Use numbers like 1.2.0.' : el.name === 'repo_url' ? 'Use https://github.com/your-handle/your-app.' : el.name === 'github_handle' ? 'Use your GitHub handle, letters, numbers and dashes only.' : 'Check the format of this field.';
