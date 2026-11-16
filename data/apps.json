@@ -1,5 +1,5 @@
 {
-  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download may only point at github.com/<owner>/<repo> (archives, tags, releases) and is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden). appId: the public JCA ID (JCA-0001 to JCA-0005 are reserved for the store owner's own apps); quoted in edit requests.",
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download is an app download (an .apk on the repo's GitHub Releases or an approved here.now path), labeled just \"Download\", or null for no Download button. Never a source .zip: people get the code from the repo link or Fork. It is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden). appId: the public JCA ID (JCA-0001 to JCA-0005 are reserved for the store owner's own apps); quoted in edit requests.",
   "apps": [
     {
       "id": "galaxy-gridiron",
@@ -53,8 +53,8 @@
         "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.13",
-      "versionSource": "public release notes for v0.0.13 (RELEASE_NOTES-public.md)",
+      "version": "0.0.14",
+      "versionSource": "git tag v0.0.14 (no public release notes for v0.0.14 yet)",
       "icon": {
         "src": "assets/apps/galaxy-gridiron/icon.webp",
         "alt": "Galaxy Gridiron app icon"
@@ -95,8 +95,8 @@
       "links": {
         "openWeb": "https://gleaming-tangle-8ek4.here.now/play/",
         "download": {
-          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.13.apk",
-          "label": "Download APK (Android, 49.4 MB)"
+          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.14.apk",
+          "label": "Download"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -186,10 +186,7 @@
       "screenshotsNote": "Android app v0.0.6 rendered in a browser preview at phone size, with placeholder images only.",
       "links": {
         "openWeb": null,
-        "download": {
-          "url": "https://github.com/JadaE/swipe-clean/archive/refs/tags/v0.0.6.zip",
-          "label": "Download source v0.0.6"
-        },
+        "download": null,
         "githubRelease": null,
         "ownDownload": null,
         "iosAppStore": null
@@ -269,10 +266,7 @@
       "screenshotsNote": "Rendered from a fresh clone of the public repo with a fictional demo board for Kida and Micah.",
       "links": {
         "openWeb": null,
-        "download": {
-          "url": "https://github.com/JadaE/kanban-board/archive/refs/heads/master.zip",
-          "label": "Download source"
-        },
+        "download": null,
         "githubRelease": null,
         "ownDownload": null,
         "iosAppStore": null
@@ -356,10 +350,7 @@
       "screenshotsNote": "Rendered from a fresh clone of the public repo with placeholder config, its local mock sync server, and fictional demo data for one owner.",
       "links": {
         "openWeb": null,
-        "download": {
-          "url": "https://github.com/JadaE/cat-health-dashboard/archive/refs/tags/v0.0.2.zip",
-          "label": "Download source v0.0.2"
-        },
+        "download": null,
         "githubRelease": null,
         "ownDownload": null,
         "iosAppStore": null
@@ -444,7 +435,7 @@
         "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/pantry-chef/releases/download/v0.0.7/PantryChef-v0.0.7.apk",
-          "label": "Download APK (Android, 86.5 MB)"
+          "label": "Download"
         },
         "githubRelease": null,
         "ownDownload": null,
