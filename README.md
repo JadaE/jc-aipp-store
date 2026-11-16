@@ -49,7 +49,7 @@ Downloads are **source-only** for now. Each app's `links` object has:
 
 | Field | Now | Meaning |
 |---|---|---|
-| `download` | APK or `null` | The only download the site renders: an `.apk` on the repo's GitHub Releases or an approved here.now path, labeled `Download APK (<platform>, <size>)`. `null` shows no Download button. Never a source `.zip`; the repo link and Fork cover code. |
+| `download` | APK or `null` | The only download the site renders: an `.apk` on the repo's GitHub Releases or an approved here.now path, labeled just `Download`. `null` shows no Download button. Never a source `.zip`; the repo link and Fork cover code. |
 | `githubRelease` | `null` | Reserved: a GitHub Releases asset, e.g. `{"url": "https://github.com/<owner>/<repo>/releases/download/<tag>/<file>", "label": "...", "enabled": false}`. |
 | `ownDownload` | `null` | Reserved: an owner-hosted download link, e.g. `{"url": "...", "label": "...", "enabled": false}`. |
 | `iosAppStore` | `null` | Reserved: an `apps.apple.com` listing. |

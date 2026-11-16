@@ -135,7 +135,7 @@ for (const a of apps) {
   if (/View repo/i.test(h)) fail(`${a.id}: 'View repo' button must be removed`);
   const dlBtn = btns.find((b) => /\bdl\b/.test(b[1]));
   if (a.links?.download && /\/archive\/|\.zip$/i.test(a.links.download.url)) fail(`${a.id}: no source .zip downloads (the repo link and Fork cover code)`);
-  if (a.links?.download && !/^Download APK \(\w[^,]*, [\d.]+ [KMG]B\)$/.test(a.links.download.label)) fail(`${a.id}: Download label must read "Download APK (<platform>, <size>)"`);
+  if (a.links?.download && a.links.download.label !== 'Download') fail(`${a.id}: Download label must be just "Download"`);
   if (!!a.links?.download !== !!dlBtn) fail(`${a.id}: Download button must show exactly when links.download is set`);
   if (dlBtn && (btns[0] !== dlBtn || !(/\/releases\/download\/.+\.apk$/.test(dlBtn[2]) || hereNowAllowed(dlBtn[2])))) fail(`${a.id}: Download must be the first button (after Open, if any) and point at an APK`);
   const fork = btns[dlBtn ? 1 : 0];

@@ -1,5 +1,5 @@
 {
-  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download is an app download (an .apk on the repo's GitHub Releases or an approved here.now path), labeled \"Download APK (<platform>, <size>)\", or null for no Download button. Never a source .zip: people get the code from the repo link or Fork. It is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden).",
+  "$schemaNote": "One entry per app. Required: id, name, repo, summary, about, technical, platforms, version, icon, screenshots, links. Allowed platforms: android, ios, windows, macos, web. Use \"Unknown\" for an unknown version and add a todo. screenshots[]: {src (WebP or PNG under static/), alt, width, height} (no captions); 0-4 per app, fictional demo data only. links.download is an app download (an .apk on the repo's GitHub Releases or an approved here.now path), labeled just \"Download\", or null for no Download button. Never a source .zip: people get the code from the repo link or Fork. It is the only download rendered. links.githubRelease and links.ownDownload are reserved slots (see README, 'Download data model'): keep them null, or {\"enabled\": false, ...}, until a release reviewer approves; the build never renders them. links.iosAppStore is reserved for a future App Store listing (null until one exists). Live app URLs that are not on GitHub must NOT go here. about[]: plain-language paragraphs for non-technical people (what it does, why you'd want it; no stack or hosting jargon). technical[]: stack, hosting and requirements, shown last in Details. Never mix the two. updates[]: {version, date (optional, YYYY-MM-DD), notes[]} newest first, only from public release notes. builtWith: the AI model or service used to build the app, or null (hidden).",
   "apps": [
     {
       "id": "galaxy-gridiron",
@@ -95,7 +95,7 @@
         "openWeb": "https://gleaming-tangle-8ek4.here.now/play/",
         "download": {
           "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.13.apk",
-          "label": "Download APK (Android, 49.4 MB)"
+          "label": "Download"
         },
         "githubRelease": null,
         "ownDownload": null,
@@ -430,7 +430,7 @@
         "openWeb": null,
         "download": {
           "url": "https://github.com/JadaE/pantry-chef/releases/download/v0.0.7/PantryChef-v0.0.7.apk",
-          "label": "Download APK (Android, 86.5 MB)"
+          "label": "Download"
         },
         "githubRelease": null,
         "ownDownload": null,
