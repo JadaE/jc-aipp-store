@@ -133,11 +133,16 @@ for (const a of apps) {
   const actions = (h.match(/<div class="actions[^"]*"[\s\S]*?<\/div>/) || [''])[0];
   const btns = [...actions.matchAll(/<a class="([^"]+)" href="([^"]+)"/g)].filter((b) => !/\bopen\b/.test(b[1])); // optional Open (web apps) comes before these
   if (/View repo/i.test(h)) fail(`${a.id}: 'View repo' button must be removed`);
-  if (!btns.length || !(/\/archive\/|\/releases\//.test(btns[0][2]) || hereNowAllowed(btns[0][2]))) fail(`${a.id}: Download must be the first button (after Open, if any)`);
-  if (!btns[1] || !/\/fork$/.test(btns[1][2])) fail(`${a.id}: Fork must come right after Download`);
+  const dlBtn = btns.find((b) => /\bdl\b/.test(b[1]));
+  if (a.links?.download && /\/archive\/|\.zip$/i.test(a.links.download.url)) fail(`${a.id}: no source .zip downloads (the repo link and Fork cover code)`);
+  if (a.links?.download && !/^Download APK \(\w[^,]*, [\d.]+ [KMG]B\)$/.test(a.links.download.label)) fail(`${a.id}: Download label must read "Download APK (<platform>, <size>)"`);
+  if (!!a.links?.download !== !!dlBtn) fail(`${a.id}: Download button must show exactly when links.download is set`);
+  if (dlBtn && (btns[0] !== dlBtn || !(/\/releases\/download\/.+\.apk$/.test(dlBtn[2]) || hereNowAllowed(dlBtn[2])))) fail(`${a.id}: Download must be the first button (after Open, if any) and point at an APK`);
+  const fork = btns[dlBtn ? 1 : 0];
+  if (!fork || !/\/fork$/.test(fork[2])) fail(`${a.id}: Fork must come right after Download (or first when there is no Download)`);
   if (btns.some((b) => b[2].endsWith('/fork') && /\bprimary\b/.test(b[1]))) fail(`${a.id}: Fork must not be the highlighted button`);
   if (/<figcaption|class="shots-hint"|class="actions-hint"|Scroll sideways|source code as a \.zip/i.test(h)) fail(`${a.id}: captions or usage how-to text must not appear`);
-  if (!/class="btn action dl"/.test(actions) || !/class="btn action fork"/.test(actions)) fail(`${a.id}: Download and Fork must both be colored buttons`);
+  if ((dlBtn && !/class="btn action dl"/.test(actions)) || !/class="btn action fork"/.test(actions)) fail(`${a.id}: Download and Fork must both be colored buttons`);
   if (!Array.isArray(a.updates) || a.updates.some((u) => !u.version || !Array.isArray(u.notes) || !u.notes.length || (u.date && !/^\d{4}-\d{2}-\d{2}$/.test(u.date)))) fail(`${a.id}: updates must be [{version, date?, notes[]}]`);
   if (!('builtWith' in a)) fail(`${a.id}: builtWith missing (use null)`);
   if (a.builtWith == null && /Built with/.test(h)) fail(`${a.id}: Built with must be hidden while null`);
@@ -229,7 +234,7 @@ const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e.
 const htmlFiles = fs.existsSync(dist) ? walk(dist).filter((f) => f.endsWith('.html')) : [];
 const allowedExternal = [
   new RegExp(`^https://github\\.com/${owner}/?$`),
-  ...apps.map((a) => new RegExp(`^https://github\\.com/${owner}/${a.repo}(/(fork|releases.*|archive/refs/.+\\.zip))?$`)),
+  ...apps.map((a) => new RegExp(`^https://github\\.com/${owner}/${a.repo}(/(fork|releases.*))?$`)),
   /^https:\/\/apps\.apple\.com\//,
   ...hereNowAllow,
   ...apps.filter((a) => a.links?.openWeb).map((a) => new RegExp(`^${a.links.openWeb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)),
