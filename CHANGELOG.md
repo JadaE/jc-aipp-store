@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.11
+- Swipe Clean: removed the web demo from its page (the demo sentence, the Web platform and its note). Android only now.
+
 ## v0.0.9
 - Galaxy Gridiron v0.0.12: Download now gets the Android APK (49.4 MB), and a new Open button starts the full web version in a new tab. Updates lists what's new in v0.0.12.
 - Footer: a small disclaimer on every page (personal, non-commercial; as-is, no warranty; not affiliated with Sleeper, the NFL or any team).
