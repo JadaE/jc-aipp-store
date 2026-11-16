@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.14
+- New invite-only developer submission form at /submit/ (not linked from the footer or sitemap, noindex). Submissions are stored owner-read only; the batch stays dry-run and only pre-approved developers are processed.
+- Each app page shows its App ID and a "Request an edit" panel (edit requests by email are coming soon).
+
 ## v0.0.13
 - Galaxy Gridiron is listed as v0.0.14, and Download gets the v0.0.14 APK.
 
