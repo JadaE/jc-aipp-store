@@ -64,7 +64,7 @@ const html = fs.existsSync(formFile) ? fs.readFileSync(formFile, 'utf8') : '';
   const hp = (html.match(/<div class="hp-field" aria-hidden="true">[\s\S]*?<\/div>/) || [''])[0];
   expect(/name="hp_website"/.test(hp) && /tabindex="-1"/.test(hp) && /autocomplete="off"/.test(hp) && !/required/.test(hp), 'honeypot: aria-hidden wrapper, tabindex -1, autocomplete off, not required');
   expect(/<form[^>]*novalidate[^>]*data-endpoint="\.\.\/\.herenow\/data\/submissions"/.test(html), 'form posts to the same-site Site Data endpoint (relative URL)');
-  for (const t of ['jc-aipp-store.txt', 'keytool -printcert', 'Releases', '(personal)']) if (!html.includes(t)) fail(`setup basics missing "${t}"`);
+  for (const t of ['invite only', 'Google Photos', 'at least one link']) if (!html.includes(t)) fail(`setup basics missing "${t}"`);
   expect(!/here\.now/i.test(html.replace(/<link rel="canonical"[^>]*>|<meta property="og:[^>]*>|<meta name="twitter:[^>]*>/g, '')), 'form copy names no hosting provider or site slug');
   expect(!new RegExp(OWNER_NAME, 'i').test(html.replace(/JadaE/g, '')), 'no owner name on the form');
   const pages = ['index.html', ...fs.readdirSync(path.join(dist, 'apps')).map((a) => `apps/${a}/index.html`), 'submit/index.html'];
@@ -164,7 +164,7 @@ const withData = (r, d) => ({ ...r, data: { ...r.data, ...d } });
   const hn = ['https://private-thing', 'here', 'now/x'].join('.');
   const cases = [
     ['clean record passes', good(), (c) => !c.problems.length && !c.scans.length && !c.hidden.length],
-    ['missing required fields', withData(good(), { app_name: '', icon_alt: undefined, agree_owner: false }), (c) => ['app_name: required', 'icon_alt: required', 'agree_owner: must be ticked'].every((p) => c.problems.includes(p))],
+    ['missing required fields', withData(good(), { app_name: '', summary: '' }), (c) => ['app_name: required', 'summary: required'].every((p) => c.problems.includes(p))],
     ['direct .apk download rejected', withData(good(), { download_page_url: 'https://example.com/app.apk' }), (c) => c.problems.some((p) => /\.apk/.test(p))],
     ['source .zip download rejected', withData(good(), { download_page_url: 'https://github.com/dev/app/archive/refs/tags/v1.0.0.zip' }), (c) => c.problems.some((p) => /\.zip/.test(p))],
     ['http link rejected', withData(good(), { download_page_url: 'http://example.com/releases' }), (c) => c.problems.some((p) => /https/.test(p))],
@@ -542,7 +542,7 @@ else {
     await p.goto(url);
     await p.click('button[type=submit]');
     const st = await p.evaluate(() => ({ shown: !document.getElementById('error-summary').hidden, focus: document.activeElement.id, items: document.querySelectorAll('#error-summary li').length, invalid: document.querySelectorAll('[aria-invalid=true]').length }));
-    const reqCount = FIELDS.filter((f) => f.required).length;
+    const reqCount = FIELDS.filter((f) => f.required).length + 1; // + the one-link rule
     expect(st.shown && st.focus === 'error-summary' && st.items === reqCount && st.invalid >= reqCount && posts.length === 0, `empty submit: error summary focused with ${st.items}/${reqCount} required-field errors, fields marked aria-invalid, nothing sent`);
     await p.addScriptTag({ path: axePath });
     for (const theme of ['dark', 'light']) {
@@ -553,11 +553,11 @@ else {
     // error link moves focus to the field
     await p.click('#error-summary li:first-child a');
     expect(await p.evaluate(() => document.activeElement.id) === 'f-dev_name', 'error summary links move focus to the field');
-    // 2. invalid values: bad email, http link, .apk download, repo not owned by handle
-    await fill(p, { ...sample, contact_email: 'not-an-email', download_page_url: 'https://example.com/a.apk', repo_url: 'https://github.com/other/app' });
+    // 2. invalid values: bad email, http link
+    await fill(p, { ...sample, contact_email: 'not-an-email', download_page_url: 'http://example.com/a' });
     await p.click('button[type=submit]');
     const errs = await p.$$eval('#error-summary li', (l) => l.map((x) => x.textContent));
-    expect(posts.length === 0 && errs.some((e) => /email/i.test(e)) && errs.some((e) => /\.apk/.test(e)) && errs.some((e) => /belong/.test(e)), `format checks block the send (${errs.length} errors)`);
+    expect(posts.length === 0 && errs.some((e) => /email/i.test(e)) && errs.some((e) => /https/.test(e)), `format checks block the send (${errs.length} errors)`);
     await p.close();
     // 3. valid submit: one POST with the right fields and an Idempotency-Key, no honeypot key
     p = await browser.newPage(); await p.goto(url);
