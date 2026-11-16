@@ -25,6 +25,7 @@
     "batchSize": 10,
     "perEmailPerHour": 3,
     "linkCheckTimeoutMs": 8000,
+    "approvedAppsFile": "OPTIONAL: private allowlist of pre-approved repo URLs, {\"repos\": [\"https://github.com/<owner>/<repo>\"]}, outside the repo (default: ~/.aipp-store/approved-apps.json). Only the store owner edits it. Missing or empty = every submission is skipped.",
     "stateFile": "OPTIONAL: a path outside the repo (default: ~/.aipp-store/submissions-state.json)",
     "privateTerms": [],
     "privateTermsNote": "Put private names and terms to block (family words, real usernames, league or pet names) in config.local.json only, never here.",

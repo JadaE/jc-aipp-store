@@ -58,6 +58,8 @@ export function loadConfig(dir = root) {
     cleanupJunkDays: +sub.cleanupJunkDays || 7,
     retentionDays: +sub.retentionDays || 90,
     draftRetentionDays: +sub.draftRetentionDays || 30,
+    // Pre-approval gate: only repos on the owner's allowlist are fetched, checked or emailed. Private file, owner-edited only.
+    approvedAppsFile: placeholder(sub.approvedAppsFile) ? path.join(os.homedir(), '.aipp-store', 'approved-apps.json') : sub.approvedAppsFile,
     stateFile: placeholder(sub.stateFile) ? path.join(os.homedir(), '.aipp-store', 'submissions-state.json') : sub.stateFile,
     draftsDir: placeholder(sub.draftsDir) ? path.join(os.homedir(), '.aipp-store', 'drafts') : sub.draftsDir, // private; JC-9 confirmation drafts
     frontOfficeEmail: String(local.submissions?.frontOfficeEmail || ex.submissions?.frontOfficeEmail || 'TBD').trim(),
@@ -88,6 +90,19 @@ export function isBanned(f, banned = {}) {
 export const fieldsOf = (r) => (r && typeof r.data === 'object' && r.data) ? r.data : r;
 
 // ---------- state (outside the repo; never committed)
+// Pre-approval gate. Missing or unreadable file = empty list = nothing gets through (fail closed).
+export function loadApproved(file) {
+  try { const j = JSON.parse(fs.readFileSync(file, 'utf8')); return [...new Set((Array.isArray(j.repos) ? j.repos : []).map(normRepo).filter(Boolean))]; } catch { return []; }
+}
+export function splitApproved(records, approved = []) {
+  const ok = new Set(approved.map(normRepo).filter(Boolean)), keep = [], notApproved = [];
+  for (const r of records) {
+    const repo = normRepo(fieldsOf(r).repo_url);
+    if (repo && ok.has(repo)) keep.push(r);
+    else notApproved.push({ id: validMeta(r) ? r.id : null, reason: 'not-pre-approved', repo: repo && /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+$/.test(repo) ? repo : null });
+  }
+  return { keep, notApproved };
+}
 export function loadState(file) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return { processed: {}, lastId: 0 }; } }
 function saveState(file, state) { fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 }); fs.writeFileSync(file, JSON.stringify(state, null, 2), { mode: 0o600 }); fs.chmodSync(file, 0o600); }
 
@@ -291,6 +306,7 @@ export function prBody({ listings, results, now, cfg }) {
     `- Rejected (needs fixes): ${results.rejected.length}`,
     `- Blocked by scans: ${results.blocked.length}`,
     `- Quarantined (hidden-instruction scan): ${results.quarantined.length}`,
+    `- Not pre-approved (skipped, nothing fetched): ${(results.notApproved || []).length}`,
     `- Dropped (bad metadata / banned / honeypot / rate limit / duplicate): ${results.dropped.length}`,
     `- Duplicates of pending listings (need a person): ${results.duplicateOfPending.length}`,
     `- Deferred to the next batch: ${results.deferred.length}`,
@@ -320,35 +336,39 @@ export function buildSummary({ results, mode, now, read, paused }) {
     blocked: { count: results.blocked.length, items: results.blocked.slice(0, 20).map((x) => ({ id: x.id, reasons: x.reasons.slice(0, 8) })) },
     quarantined: { count: results.quarantined.length, items: results.quarantined.slice(0, 20) }, // P0: record ID + rule names only
     duplicateOfPending: { count: results.duplicateOfPending.length, items: results.duplicateOfPending.slice(0, 20) },
+    notApproved: { count: (results.notApproved || []).length, items: (results.notApproved || []).slice(0, 20).map((x) => ({ id: x.id, repo: x.repo })) }, // for the owner to decide; nothing fetched
     dropped: group(results.dropped),
     deferred: { count: results.deferred.length, sample: results.deferred.slice(0, 20) },
   };
   // Hard cap: shrink lists until it fits.
   for (let n = 20; Buffer.byteLength(JSON.stringify(s, null, 2)) > SUMMARY_MAX_BYTES && n >= 0; n = n > 5 ? n - 5 : n - 1) {
     for (const k of ['accepted', 'rejected', 'blocked', 'quarantined', 'duplicateOfPending']) s[k].items = s[k].items.slice(0, n);
-    s.dropped.sample = s.dropped.sample.slice(0, n); s.deferred.sample = s.deferred.sample.slice(0, n);
+    s.notApproved.items = s.notApproved.items.slice(0, n); s.dropped.sample = s.dropped.sample.slice(0, n); s.deferred.sample = s.deferred.sample.slice(0, n);
     for (const k of ['rejected', 'blocked']) s[k].items = s[k].items.map((x) => ({ id: x.id, reasons: x.reasons.slice(0, Math.max(1, Math.floor(n / 4))) }));
     s.truncated = true;
   }
   return s;
 }
 
-const emptyResults = () => ({ dropped: [], deferred: [], rejected: [], blocked: [], quarantined: [], accepted: [], duplicateOfPending: [] });
+const emptyResults = () => ({ notApproved: [], dropped: [], deferred: [], rejected: [], blocked: [], quarantined: [], accepted: [], duplicateOfPending: [] });
 
 // ---------- the whole batch (pure except for fetchImpl/lookupImpl; no writes)
-export async function runBatch(records, { cfg, state = { processed: {}, lastId: 0 }, existing = [], now = new Date(), network = true, fetchImpl, lookupImpl, totalStored } = {}) {
+export async function runBatch(allRecords, { cfg, approved = [], state = { processed: {}, lastId: 0 }, existing = [], now = new Date(), network = true, fetchImpl, lookupImpl, totalStored } = {}) {
   const noop = (extra) => ({ results: emptyResults(), listings: [], body: '', newState: extra ? { ...state, ...extra } : state, drafts: [], paused: (extra && extra.paused) || state.paused });
   // Fail closed: a paused batch checks nothing, opens no PR and writes no drafts.
   if (state.paused) return noop();
+  // Pre-approval gate (owner's allowlist): anything else is only listed, never fetched, checked, drafted or emailed.
+  const { keep: records, notApproved } = splitApproved(allRecords, approved);
   // Flood alarm (P1-3): too many new records in 24h, or too many stored, pauses the batch.
-  const recent = records.filter((r) => validMeta(r) && now - Date.parse(r.created_at) < 24 * HOUR && Date.parse(r.created_at) <= +now + 60e3).length;
-  const stored = totalStored ?? (Object.keys(state.processed || {}).length + records.filter((r) => validMeta(r) && !state.processed?.[r.id]).length);
+  const recent = allRecords.filter((r) => validMeta(r) && now - Date.parse(r.created_at) < 24 * HOUR && Date.parse(r.created_at) <= +now + 60e3).length;
+  const stored = totalStored ?? (Object.keys(state.processed || {}).length + allRecords.filter((r) => validMeta(r) && !state.processed?.[r.id]).length);
   if (recent > cfg.floodThreshold || stored > cfg.floodTotal) return noop({ paused: { since: now.toISOString(), reason: 'flood', recent24h: recent, stored } });
+  // Flood counts use allRecords, so a flood of unapproved junk still pauses the batch.
 
   const existingRepos = existing.map((l) => l.repo?.url || l.repoUrl).filter(Boolean);
   const results = emptyResults();
   const t = triage(records, { state, perEmailPerHour: cfg.perEmailPerHour, batchSize: cfg.batchSize, existingRepos });
-  results.dropped = t.dropped; results.deferred = t.deferred;
+  results.notApproved = notApproved; results.dropped = t.dropped; results.deferred = t.deferred;
   const used = new Set(existing.map((l) => idNum(l.appId)).filter(Boolean));
   let next = Math.max(cfg.reservedTo + 1, (state.lastId || 0) + 1, ...[...used].map((n) => n + 1));
   const listings = [];
@@ -467,7 +487,8 @@ async function main(argv) {
   // The store's own apps count as existing listings, so their repos can't be submitted again.
   try { const own = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8')).apps; existing = [...existing, ...own.map((a) => ({ repo: { url: `https://github.com/${cfg.ownerHandle}/${a.repo}` } }))]; } catch {}
 
-  const run = await runBatch(records, { cfg, state, existing, now, network: !has('--no-network'), totalStored: total });
+  const approved = loadApproved(cfg.approvedAppsFile);
+  const run = await runBatch(records, { cfg, approved, state, existing, now, network: !has('--no-network'), totalStored: total });
   const { results, listings, body, drafts } = run;
   let newState = run.newState;
   if (fetchState && !run.paused) newState = { ...newState, fetch: fetchState };

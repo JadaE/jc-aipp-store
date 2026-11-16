@@ -8,7 +8,9 @@ import http from 'node:http';
 import { execFileSync, execSync } from 'node:child_process';
 import { FIELDS, COLLECTION, HONEYPOT, RATE_LIMIT, manifest } from './tools/submission-schema.mjs';
 import { OWNER_NAME } from './tools/scans.mjs';
-import { loadConfig, triage, checkRecord, runBatch, fmtId, buildSummary, SUMMARY_MAX_BYTES, fetchRecords, reachability, isPrivateAddress, validateEdit } from './tools/submissions-batch.mjs';
+import { loadConfig, triage, checkRecord, runBatch as runBatchRaw, fieldsOf, loadApproved, splitApproved, fmtId, buildSummary, SUMMARY_MAX_BYTES, fetchRecords, reachability, isPrivateAddress, validateEdit } from './tools/submissions-batch.mjs';
+// Existing batch tests run with every record's repo pre-approved; the gate itself is tested in 'submissions: pre-approval gate'.
+const runBatch = (recs, o = {}) => runBatchRaw(recs, { approved: recs.map((r) => fieldsOf(r).repo_url), ...o });
 import { buildDraft, toEml, writeDrafts, assertPrivateDir } from './tools/confirmation-drafts.mjs';
 import { verifyEditRequest, verifyContactReply, markEmailVerified, markOwnershipPassed, makeEmailOnFile, editMail, frontOfficeReady } from './tools/edit-requests.mjs';
 
@@ -66,8 +68,10 @@ const html = fs.existsSync(formFile) ? fs.readFileSync(formFile, 'utf8') : '';
   expect(!/here\.now/i.test(html.replace(/<link rel="canonical"[^>]*>|<meta property="og:[^>]*>|<meta name="twitter:[^>]*>/g, '')), 'form copy names no hosting provider or site slug');
   expect(!new RegExp(OWNER_NAME, 'i').test(html.replace(/JadaE/g, '')), 'no owner name on the form');
   const pages = ['index.html', ...fs.readdirSync(path.join(dist, 'apps')).map((a) => `apps/${a}/index.html`), 'submit/index.html'];
-  expect(pages.every((p) => /<p class="footer-links"><a href="(?:\.\.\/)*submit\/index\.html">Submit an app<\/a><\/p>/.test(fs.readFileSync(path.join(dist, p), 'utf8'))), 'every page links to the form from the footer');
-  expect(fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8').includes('/submit/</loc>'), 'form is in the sitemap');
+  expect(pages.every((p) => !/submit\/index\.html|Submit an app<\/a>/.test(fs.readFileSync(path.join(dist, p), 'utf8').replace(/<link rel="canonical"[^>]*>|<meta property="og:url"[^>]*>/g, ''))), 'no page links to the form (invite only)');
+  expect(!fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8').includes('/submit/'), 'form is not in the sitemap');
+  expect(/<meta name="robots" content="noindex">/.test(html), 'form page is noindex');
+  expect(/okay first/i.test(html), 'form says apps need the store owner\'s okay first');
 }
 
 // ---------- config
@@ -215,7 +219,7 @@ const withData = (r, d) => ({ ...r, data: { ...r.data, ...d } });
 }
 {
   // P1-3: bounded summary, flood alarm, cursor fetching
-  const many = Array.from({ length: 5000 }, (_, i) => ({ id: `r${i}`, created_at: new Date(T0 - 40 * 864e5 + i * 1000).toISOString(), data: { contact_email: `x${i}@example.com`, [HONEYPOT]: i % 2 ? 'x' : '' } }));
+  const many = Array.from({ length: 5000 }, (_, i) => ({ id: `r${i}`, created_at: new Date(T0 - 40 * 864e5 + i * 1000).toISOString(), data: { repo_url: `https://github.com/x/r${i}`, contact_email: `x${i}@example.com`, [HONEYPOT]: i % 2 ? 'x' : '' } }));
   const res = await runBatch(many, { cfg: { ...cfg, floodTotal: 1e9 }, now: new Date(T0), network: false });
   const sum = buildSummary({ results: res.results, mode: 'dry-run', now: new Date(T0), read: many.length });
   const bytes = Buffer.byteLength(JSON.stringify(sum, null, 2));
@@ -236,6 +240,30 @@ const withData = (r, d) => ({ ...r, data: { ...r.data, ...d } });
   let capErr = ''; try { await fetchRecords({ apiKey: 'k', slug: 's' }, {}, { maxPages: 3, fetchImpl: async () => ({ ok: true, status: 200, json: async () => ({ records: [], nextCursor: 'more' }) }) }); } catch (e) { capErr = e.code; }
   expect(capErr === 'fetch-cap', 'hitting the page cap aborts with fetch-cap (never silently truncates)');
 }
+
+// ---------- pre-approval gate (Security Lead round 2 must-fix)
+section('submissions: pre-approval gate');
+{
+  const T0g = Date.parse('2026-11-16T12:00:00Z');
+  const mk = (i, repo) => ({ id: `g${i}`, created_at: new Date(T0g - i * 60e3).toISOString(), data: { repo_url: repo, contact_email: `g${i}@example.com` } });
+  const recs = [mk(1, 'https://github.com/friend/app'), mk(2, 'https://github.com/stranger/app'), mk(3, 'not a url')];
+  const sp = splitApproved(recs, ['https://github.com/Friend/app/']);
+  expect(sp.keep.length === 1 && sp.keep[0].id === 'g1' && sp.notApproved.length === 2 && sp.notApproved.every((x) => x.reason === 'not-pre-approved'), 'only allowlisted repos pass (case and trailing slash ignored)');
+  expect(sp.notApproved.find((x) => x.id === 'g3').repo === null, 'unparseable repo text is not echoed');
+  expect(splitApproved(recs, []).keep.length === 0, 'empty allowlist lets nothing through');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'aipp-gate-'));
+  expect(loadApproved(path.join(tmp, 'missing.json')).length === 0, 'missing allowlist file = fail closed');
+  fs.writeFileSync(path.join(tmp, 'bad.json'), '{not json'); expect(loadApproved(path.join(tmp, 'bad.json')).length === 0, 'broken allowlist file = fail closed');
+  fs.writeFileSync(path.join(tmp, 'ok.json'), JSON.stringify({ repos: ['https://github.com/friend/app'] })); expect(loadApproved(path.join(tmp, 'ok.json')).length === 1, 'allowlist file loads');
+  let fetched = 0;
+  const fetchImpl = async () => { fetched++; return { status: 200, headers: new Map() }; };
+  const lookupImpl = async () => { fetched++; return [{ address: '93.184.216.34', family: 4 }]; };
+  const g = await runBatchRaw([good(), withData(good(), { repo_url: 'https://github.com/stranger/other' })].map((r, i) => ({ ...r, id: `gate${i}` })), { cfg, approved: [], now: new Date(T0), network: true, fetchImpl, lookupImpl });
+  expect(fetched === 0 && g.results.accepted.length === 0 && g.drafts.length === 0 && !g.body.includes('JCA-') && g.results.notApproved.length === 2, 'not pre-approved: no fetch, no checks, no ID, no drafts; just listed');
+  const sum = buildSummary({ results: g.results, mode: 'dry-run', now: new Date(T0), read: 2 });
+  expect(sum.notApproved.count === 2 && sum.notApproved.items.every((x) => Object.keys(x).join() === 'id,repo'), 'summary lists not-approved IDs and repo only');
+}
+
 {
   // P2-1: reachability (HEAD only, manual redirects, DNS checks, "unreachable" only)
   const pub = async () => [{ address: '93.184.216.34', family: 4 }];
@@ -258,9 +286,12 @@ const withData = (r, d) => ({ ...r, data: { ...r.data, ...d } });
   // CLI dry run: writes only to --out, opens no PR, touches no state file
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'aipp-sub-test-'));
   const fx = path.join(tmp, 'records.json'), st = path.join(tmp, 'state.json'), outDir = path.join(tmp, 'out');
-  fs.writeFileSync(fx, JSON.stringify({ records: [good(), good(), withData(good(), { [HONEYPOT]: 'x' })] }));
+  const cliRecs = [good(), good(), withData(good(), { [HONEYPOT]: 'x' })];
+  fs.writeFileSync(fx, JSON.stringify({ records: cliRecs }));
+  fs.mkdirSync(path.join(tmp, '.aipp-store'), { recursive: true }); // pre-approval allowlist in the (test) home dir
+  fs.writeFileSync(path.join(tmp, '.aipp-store', 'approved-apps.json'), JSON.stringify({ repos: cliRecs.map((r) => r.data.repo_url) }));
   let res = '', code = 0;
-  try { res = execFileSync('node', ['tools/submissions-batch.mjs', '--dry-run', '--no-network', '--fixtures', fx, '--state', st, '--out', outDir, '--now', '2026-11-10T12:00:00Z'], { cwd: root, encoding: 'utf8', env: { ...process.env, PATH: `${tmp}:${process.env.PATH}` } }); } catch (e) { code = e.status; res = String(e.stdout) + String(e.stderr); }
+  try { res = execFileSync('node', ['tools/submissions-batch.mjs', '--dry-run', '--no-network', '--fixtures', fx, '--state', st, '--out', outDir, '--now', '2026-11-10T12:00:00Z'], { cwd: root, encoding: 'utf8', env: { ...process.env, HOME: tmp, PATH: `${tmp}:${process.env.PATH}` } }); } catch (e) { code = e.status; res = String(e.stdout) + String(e.stderr); }
   let s = {}; try { s = JSON.parse(res); } catch {}
   const files = fs.existsSync(path.join(outDir, 'listings')) ? fs.readdirSync(path.join(outDir, 'listings')) : [];
   expect(code === 0 && s.mode === 'dry-run' && s.accepted?.count === 2 && s.wouldOpenDraftPr?.files.length === 2 && files.length === 2 && !fs.existsSync(st), `CLI --dry-run: ${files.join(', ') || 'no files'}, draft PR described not opened, no state written`);
@@ -402,7 +433,9 @@ section('confirmation drafts (JC-9)');
   // CLI: dry run is the default (no --live), drafts in <out>/drafts, stdout/summary/PR body without emails, no state written
   const fx = path.join(tmp, 'records.json'), outDir = path.join(tmp, 'out'), st = path.join(tmp, 'st.json');
   fs.writeFileSync(fx, JSON.stringify({ records: recs }));
-  const res = execFileSync('node', ['tools/submissions-batch.mjs', '--no-network', '--fixtures', fx, '--state', st, '--out', outDir, '--now', '2026-11-10T12:00:00Z'], { cwd: root, encoding: 'utf8' });
+  fs.mkdirSync(path.join(tmp, '.aipp-store'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, '.aipp-store', 'approved-apps.json'), JSON.stringify({ repos: recs.map((r) => fieldsOf(r).repo_url) }));
+  const res = execFileSync('node', ['tools/submissions-batch.mjs', '--no-network', '--fixtures', fx, '--state', st, '--out', outDir, '--now', '2026-11-10T12:00:00Z'], { cwd: root, encoding: 'utf8', env: { ...process.env, HOME: tmp } });
   const sum = JSON.parse(res);
   const dfiles = fs.readdirSync(path.join(outDir, 'drafts'));
   expect(sum.mode === 'dry-run' && !fs.existsSync(st) && sum.drafts.count === 1 && sum.drafts.sendable === 0 && dfiles.length === 2 && !/@example\.com/.test(res + fs.readFileSync(path.join(outDir, 'summary.json'), 'utf8') + fs.readFileSync(path.join(outDir, 'PR_BODY.md'), 'utf8')) && /NOT sent/.test(sum.draftsNote), 'CLI without --live is a dry run: 1 held draft in <out>/drafts, no state, no emails in stdout/summary/PR body');

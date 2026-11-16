@@ -38,13 +38,13 @@ function lockup(rel) {
   return `<div class="home-lockup">${img(L.dark, 'logo-lockup logo-dark')}${img(L.light, 'logo-lockup logo-light')}</div>`;
 }
 
-function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '' }) {
+function page({ title, description, rel, canonicalPath, body, jsonLd, ogImage = 'og-image.png', scripts = '', noindex = false }) {
   const canonical = `${base}/${canonicalPath}`;
   return `<!DOCTYPE html>
 <html lang="${site.lang}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">${noindex ? '\n<meta name="robots" content="noindex">' : ''}
 <script>try{if(localStorage.getItem("aipp-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
@@ -78,7 +78,6 @@ ${body}
 </main>
 <footer class="site-footer"><div class="wrap">
   <p>${esc(site.footer)} <a href="https://github.com/${site.githubOwner}">Browse the repos on GitHub</a>.</p>
-  <p class="footer-links"><a href="${rel}submit/index.html">Submit an app</a></p>
   <p class="fineprint">${esc(site.name)} v${esc(site.version)}</p>
   ${site.disclaimer ? `<p class="disclaimer">${esc(site.disclaimer)}</p>` : ''}
 </div></footer>
@@ -220,11 +219,12 @@ function submitPage() {
   const hp = FIELDS.find((f) => f.kind === 'honeypot');
   return page({
     title: `Submit an app | ${site.name}`,
-    description: 'List your open-source app on the store: fill in the details for its app page.',
+    description: 'Invite only: list a pre-approved app on the store.',
     rel,
     canonicalPath: 'submit/',
+    noindex: true,
     body: `<nav class="crumbs" aria-label="Breadcrumb"><a href="${rel}index.html">All apps</a> <span aria-hidden="true">/</span> <span aria-current="page">Submit an app</span></nav>
-<section class="app-hero no-icon" aria-labelledby="submit-title"><div><h1 id="submit-title">Submit an app</h1><p>Fill in everything your app page needs. Nothing goes live automatically: each submission gets an app ID, passes automatic checks, then a person reviews it. Replies can take about a week.</p></div></section>
+<section class="app-hero no-icon" aria-labelledby="submit-title"><div><h1 id="submit-title">Submit an app</h1><p>This store is for a few friends' apps, by invite. Ask the store owner and get their okay first; submissions for apps that aren't pre-approved are skipped without review. Fill in everything your app page needs. Nothing goes live automatically: each submission gets an app ID, passes automatic checks, then a person reviews it. Replies can take about a week.</p></div></section>
 <section class="panel setup" aria-labelledby="setup-title">
   <h2 id="setup-title">Before you start</h2>
   <ul>
@@ -268,7 +268,7 @@ fs.writeFileSync(path.join(out, 'submit', 'index.html'), submitPage());
 // here.now Site Data manifest (owner-only read). Applied only when Review & Release publishes this build.
 fs.mkdirSync(path.join(out, '.herenow'), { recursive: true });
 fs.writeFileSync(path.join(out, '.herenow', 'data.json'), JSON.stringify(siteDataManifest(), null, 2) + '\n');
-const urls = ['', ...apps.map((a) => `apps/${a.id}/`), 'submit/'];
+const urls = ['', ...apps.map((a) => `apps/${a.id}/`)]; // /submit/ is invite only: not in the sitemap or footer
 fs.writeFileSync(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${esc(`${base}/${u}`)}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
 console.log(`built ${apps.length} app pages -> ${path.relative(process.cwd(), out) || out} (site URL from ${siteUrlSource})`);
