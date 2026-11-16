@@ -52,8 +52,8 @@
         "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.13",
-      "versionSource": "public release notes for v0.0.13 (RELEASE_NOTES-public.md)",
+      "version": "0.0.14",
+      "versionSource": "git tag v0.0.14 (no public release notes for v0.0.14 yet)",
       "icon": {
         "src": "assets/apps/galaxy-gridiron/icon.webp",
         "alt": "Galaxy Gridiron app icon"
@@ -94,7 +94,7 @@
       "links": {
         "openWeb": "https://gleaming-tangle-8ek4.here.now/play/",
         "download": {
-          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.13.apk",
+          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.14.apk",
           "label": "Download"
         },
         "githubRelease": null,

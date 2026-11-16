@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.13
+- Galaxy Gridiron is listed as v0.0.14, and Download gets the v0.0.14 APK.
+
 ## v0.0.12
 - No more source .zip downloads: Swipe Clean, Kanban Board and Cat Health Dashboard no longer show a Download button (the repo link and Fork are how to get the code). Swipe Clean has no public APK release yet.
 - Download buttons now only appear for an app download and are labeled just "Download".
