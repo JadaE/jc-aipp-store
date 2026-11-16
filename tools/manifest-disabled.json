@@ -1,0 +1,263 @@
+{
+  "collections": {
+    "submissions": {
+      "fields": {
+        "dev_name": {
+          "type": "string",
+          "required": true,
+          "maxLength": 60,
+          "trim": true
+        },
+        "contact_email": {
+          "type": "email",
+          "required": true,
+          "maxLength": 254,
+          "trim": true
+        },
+        "github_handle": {
+          "type": "string",
+          "required": true,
+          "maxLength": 39,
+          "trim": true
+        },
+        "app_name": {
+          "type": "string",
+          "required": true,
+          "maxLength": 40,
+          "trim": true
+        },
+        "summary": {
+          "type": "string",
+          "required": true,
+          "maxLength": 120,
+          "trim": true
+        },
+        "category": {
+          "type": "string",
+          "required": true,
+          "maxLength": 40,
+          "trim": true
+        },
+        "about": {
+          "type": "string",
+          "required": true,
+          "maxLength": 1500,
+          "trim": true
+        },
+        "platforms": {
+          "type": "string",
+          "required": true,
+          "maxLength": 40,
+          "trim": true
+        },
+        "note_android": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "note_web": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "note_ios": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "version": {
+          "type": "string",
+          "required": true,
+          "maxLength": 20,
+          "trim": true
+        },
+        "whats_new": {
+          "type": "string",
+          "required": true,
+          "maxLength": 600,
+          "trim": true
+        },
+        "built_with": {
+          "type": "string",
+          "required": true,
+          "maxLength": 80,
+          "trim": true
+        },
+        "how_it_works": {
+          "type": "string",
+          "required": true,
+          "maxLength": 400,
+          "trim": true
+        },
+        "under_construction": {
+          "type": "boolean",
+          "default": false
+        },
+        "icon_url": {
+          "type": "url",
+          "required": true,
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "icon_alt": {
+          "type": "string",
+          "required": true,
+          "maxLength": 120,
+          "trim": true
+        },
+        "shot1_url": {
+          "type": "url",
+          "required": true,
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "shot1_alt": {
+          "type": "string",
+          "required": true,
+          "maxLength": 160,
+          "trim": true
+        },
+        "shot2_url": {
+          "type": "url",
+          "required": true,
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "shot2_alt": {
+          "type": "string",
+          "required": true,
+          "maxLength": 160,
+          "trim": true
+        },
+        "shot3_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "shot3_alt": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "shot4_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "shot4_alt": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "shot5_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "shot5_alt": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "shot6_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "shot6_alt": {
+          "type": "string",
+          "maxLength": 160,
+          "trim": true
+        },
+        "screenshots_note": {
+          "type": "string",
+          "maxLength": 200,
+          "trim": true
+        },
+        "repo_url": {
+          "type": "url",
+          "required": true,
+          "maxLength": 200,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "license": {
+          "type": "string",
+          "maxLength": 40,
+          "trim": true
+        },
+        "download_page_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "download_size": {
+          "type": "string",
+          "maxLength": 20,
+          "trim": true
+        },
+        "open_web_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "ios_app_store_url": {
+          "type": "url",
+          "maxLength": 300,
+          "allowedProtocols": [
+            "https"
+          ]
+        },
+        "agree_owner": {
+          "type": "boolean",
+          "required": true
+        },
+        "agree_clean": {
+          "type": "boolean",
+          "required": true
+        },
+        "agree_disclaimer": {
+          "type": "boolean",
+          "required": true
+        },
+        "hp_website": {
+          "type": "string",
+          "maxLength": 200,
+          "trim": true
+        },
+        "form_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99,
+          "default": 1
+        }
+      },
+      "access": {
+        "read": "owner",
+        "insert": "none",
+        "update": "owner",
+        "delete": "owner"
+      },
+      "rateLimit": "3/hour/ip"
+    }
+  }
+}
