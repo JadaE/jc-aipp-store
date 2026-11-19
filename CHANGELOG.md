@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Local-only submission review tool (`npm run review`). It is not part of the published site, so there is no store version bump.
+
 ## v0.0.16
 - The footer no longer links to a profile-wide GitHub browse page. Each app's own GitHub links are unchanged.
 - The Open button is gone from home-page cards. It still appears on an app's own page (Galaxy Gridiron).
