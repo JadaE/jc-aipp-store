@@ -266,6 +266,14 @@ for (const f of htmlFiles) {
 }
 ok(`${htmlFiles.length} pages, ${internal} internal refs, ${external} external links checked`);
 
+{
+  const noDir = !fs.existsSync(path.join(dist, 'review')) && !fs.existsSync(path.join(dist, 'review', 'index.html'));
+  const noMap = !fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8').includes('/review/');
+  const noLink = !htmlFiles.some((f) => /href=["'][^"']*\/review\//.test(fs.readFileSync(f, 'utf8')));
+  if (noDir && noMap && noLink) ok('no public /review/ page, sitemap entry or in-build link');
+  else fail(`public review page leaked (dir=${noDir}, sitemap=${noMap}, links=${noLink})`);
+}
+
 // 2b. no local box paths in public data
 for (const f of fs.readdirSync(path.join(root, 'data')).filter((n) => n.endsWith('.json'))) {
   const t = fs.readFileSync(path.join(root, 'data', f), 'utf8');
