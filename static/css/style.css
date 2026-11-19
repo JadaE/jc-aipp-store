@@ -64,9 +64,16 @@ img{max-width:100%;height:auto;display:block}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .site-header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:var(--bg)}
-.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4rem}
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:4rem}
 html{scroll-padding-top:5rem}
-.brand{display:inline-flex;align-items:center;gap:.6rem;color:var(--text);text-decoration:none;font-weight:700;letter-spacing:.01em}
+.brand{display:inline-flex;align-items:center;gap:.6rem;color:var(--text);text-decoration:none;font-weight:700;letter-spacing:.01em;min-width:0;white-space:nowrap}
+.header-actions{display:flex;align-items:center;gap:.5rem;flex:none}
+.btn.header-submit{white-space:nowrap;min-height:40px;padding:.35rem .7rem;font-size:.875rem}
+@media (max-width:24rem){
+  .site-header .wrap{gap:.5rem}
+  .brand{gap:.4rem;font-size:.95rem}
+  .btn.header-submit{padding:.3rem .55rem;font-size:.8125rem}
+}
 .brand .logo{display:block;width:28px;height:28px}
 .brand-lite{font-weight:500;color:var(--muted);margin-left:-.25rem}
 .logo-light{display:none!important}

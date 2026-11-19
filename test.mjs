@@ -217,7 +217,7 @@ section('logo');
   for (const sel of ['name="description"', 'property="og:description"', 'name="twitter:description"']) { const m = h.match(new RegExp(`<meta ${sel} content="([^"]*)"`)); if (m && m[1] !== want) fail(`index.html: ${sel} must be "${want}"`); }
   ok('home descriptions use the general wording'); }
 // footer line appears exactly once per page and is not repeated elsewhere; one logo mark
-const FOOT = esc(site.footer);
+const FOOT = `${esc(site.footer)} <a href="/submit/">Submit an app</a>.`;
 const footBefore = failed;
 for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
   const h = fs.readFileSync(path.join(dist, f), 'utf8');
@@ -365,7 +365,7 @@ else {
   const t1 = await tp.evaluate(() => [document.documentElement.getAttribute('data-theme'), document.querySelector('[data-theme-toggle]').getAttribute('aria-pressed'), localStorage.getItem('aipp-theme')]);
   await tp.goto(pathToFileURL(path.join(dist, 'apps', apps[0].id, 'index.html')).href);
   const t2 = await tp.evaluate(() => [document.documentElement.getAttribute('data-theme'), document.querySelector('[data-theme-toggle]').getAttribute('aria-pressed')]);
-  await tp.keyboard.press('Tab'); await tp.keyboard.press('Tab'); await tp.keyboard.press('Tab');
+  await tp.keyboard.press('Tab'); await tp.keyboard.press('Tab'); await tp.keyboard.press('Tab'); await tp.keyboard.press('Tab');
   const focused = await tp.evaluate(() => document.activeElement.hasAttribute('data-theme-toggle'));
   await tp.keyboard.press('Space');
   const t3 = await tp.evaluate(() => [document.documentElement.getAttribute('data-theme'), localStorage.getItem('aipp-theme')]);
