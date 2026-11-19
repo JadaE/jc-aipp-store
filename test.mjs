@@ -199,24 +199,25 @@ section('logo');
   if (home.indexOf('class="home-lockup"') > home.indexOf('id="hero-title"') || home.indexOf('class="home-lockup"') < home.indexOf('<main')) fail('home: lockup must sit at the top of main, above the intro');
   if (failed === lb) ok('header: tile + name words; home: centered Lite lockup above intro; alt tile favicons, main tile app icons; old marks absent; every logo/icon URL tagged');
 }
-// Open button: only for web apps with links.openWeb; first action and first on the card; nothing when null
+// Open button: only on the app detail page for web apps with links.openWeb; never on home cards
 { const ob = failed; const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   for (const a of apps) {
     const h = fs.readFileSync(path.join(dist, 'apps', a.id, 'index.html'), 'utf8');
     const card = (home.match(new RegExp(`<li class="card"[^>]*>(?:(?!</li>)[\\s\\S])*apps/${a.id}/index\\.html(?:(?!</li>)[\\s\\S])*</li>`)) || [''])[0];
     const should = !!(a.links.openWeb && a.platforms.includes('web'));
     const has = /class="btn action open"/.test(h), cardHas = /class="btn action open"/.test(card);
-    if (has !== should || cardHas !== should) fail(`${a.id}: Open button should ${should ? '' : 'not '}render`);
+    if (has !== should) fail(`${a.id}: Open button should ${should ? '' : 'not '}render on the app page`);
+    if (cardHas) fail(`${a.id}: Open button must not render on the home card`);
     if (should && !/<div class="actions[^"]*"[^>]*>\s*<a class="btn action open"/.test(h)) fail(`${a.id}: Open must be the first action`);
-    if (should && [...(h + card).matchAll(/<a class="btn action open"[^>]*>/g)].some((m) => !/target="_blank"/.test(m[0]) || !/rel="noopener"/.test(m[0]) || !/aria-label="Open /.test(m[0]))) fail(`${a.id}: Open needs target=_blank, rel=noopener and an aria-label`);
+    if (should && [...h.matchAll(/<a class="btn action open"[^>]*>/g)].some((m) => !/target="_blank"/.test(m[0]) || !/rel="noopener"/.test(m[0]) || !/aria-label="Open /.test(m[0]))) fail(`${a.id}: Open needs target=_blank, rel=noopener and an aria-label`);
   }
-  if (failed === ob) ok('Open button only for web apps with openWeb set, first, new tab + noopener + label; none rendered while null'); }
+  if (failed === ob) ok('Open button only on the app page for web apps with openWeb set, first, new tab + noopener + label; never on home cards'); }
 // home meta/og/twitter descriptions: general wording only
 { const h = fs.readFileSync(path.join(dist, 'index.html'), 'utf8'); const want = 'Apps for everyday things, all in one place.';
   for (const sel of ['name="description"', 'property="og:description"', 'name="twitter:description"']) { const m = h.match(new RegExp(`<meta ${sel} content="([^"]*)"`)); if (m && m[1] !== want) fail(`index.html: ${sel} must be "${want}"`); }
   ok('home descriptions use the general wording'); }
 // footer line appears exactly once per page and is not repeated elsewhere; one logo mark
-const FOOT = `${esc(site.footer)} <a href="https://github.com/${owner}">Browse the repos on GitHub</a>.`;
+const FOOT = esc(site.footer);
 const footBefore = failed;
 for (const f of ['index.html', ...apps.map((a) => `apps/${a.id}/index.html`)]) {
   const h = fs.readFileSync(path.join(dist, f), 'utf8');
@@ -256,8 +257,9 @@ for (const f of htmlFiles) {
       continue;
     }
     internal++;
-    let target = path.resolve(path.dirname(f), url.split(/[?#]/)[0]);
-    if (url.endsWith('/')) target = path.join(target, 'index.html');
+    const rawPath = url.split(/[?#]/)[0];
+    let target = rawPath.startsWith('/') ? path.join(dist, rawPath.slice(1)) : path.resolve(path.dirname(f), rawPath);
+    if (rawPath.endsWith('/')) target = path.join(target, 'index.html');
     if (!fs.existsSync(target)) fail(`${path.relative(dist, f)}: broken link ${url}`);
   }
   if (/<img(?![^>]*\balt=)[^>]*>/.test(html)) fail(`${path.relative(dist, f)}: <img> without alt`);

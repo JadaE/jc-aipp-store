@@ -68,7 +68,20 @@ const html = fs.existsSync(formFile) ? fs.readFileSync(formFile, 'utf8') : '';
   expect(!/here\.now/i.test(html.replace(/<link rel="canonical"[^>]*>|<meta property="og:[^>]*>|<meta name="twitter:[^>]*>/g, '')), 'form copy names no hosting provider or site slug');
   expect(!new RegExp(OWNER_NAME, 'i').test(html.replace(/JadaE/g, '')), 'no owner name on the form');
   const pages = ['index.html', ...fs.readdirSync(path.join(dist, 'apps')).map((a) => `apps/${a}/index.html`), 'submit/index.html'];
-  expect(pages.every((p) => !/submit\/index\.html|Submit an app<\/a>/.test(fs.readFileSync(path.join(dist, p), 'utf8').replace(/<link rel="canonical"[^>]*>|<meta property="og:url"[^>]*>/g, ''))), 'no page links to the form (invite only)');
+  const STRIP_CANON = /<link rel="canonical"[^>]*>|<meta property="og:url"[^>]*>/g;
+  const FORM_HREF = /(?:^|\/)submit\/?(?:index\.html)?$/;
+  const ALLOWED_SUBMIT_LINK = '<a class="btn" href="/submit/">Request an app</a>';
+  const formAnchors = (html) => [...html.replace(STRIP_CANON, '').matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)]
+    .map((m) => m[0])
+    .filter((a) => FORM_HREF.test(((a.match(/\bhref="([^"]*)"/) || [])[1] || '').split(/[?#]/)[0]) || /Submit an app|Request an app/.test(a));
+  let formLinkOk = true;
+  for (const p of pages) {
+    const links = formAnchors(fs.readFileSync(path.join(dist, p), 'utf8'));
+    if (p === 'index.html') {
+      if (links.length !== 1 || links[0] !== ALLOWED_SUBMIT_LINK) { fail(`index.html: expected exactly the Request an app button linking to /submit/, got ${JSON.stringify(links)}`); formLinkOk = false; }
+    } else if (links.length) { fail(`${p}: form should only be linked from the home Request an app button (found ${JSON.stringify(links)})`); formLinkOk = false; }
+  }
+  expect(formLinkOk, 'form is linked only from the home Request an app button');
   expect(!fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8').includes('/submit/'), 'form is not in the sitemap');
   expect(/<meta name="robots" content="noindex">/.test(html), 'form page is noindex');
   expect(/okay first/i.test(html), 'form says apps need the store owner\'s okay first');

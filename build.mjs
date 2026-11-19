@@ -77,7 +77,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
 ${body}
 </main>
 <footer class="site-footer"><div class="wrap">
-  <p>${esc(site.footer)} <a href="https://github.com/${site.githubOwner}">Browse the repos on GitHub</a>.</p>
+  <p>${esc(site.footer)}</p>
   <p class="fineprint">${esc(site.name)} v${esc(site.version)}</p>
   ${site.disclaimer ? `<p class="disclaimer">${esc(site.disclaimer)}</p>` : ''}
 </div></footer>
@@ -99,7 +99,6 @@ const iconImg = (a, rel, size, eager = false) =>
 const cards = apps.map((a) => `  <li class="card" data-platforms="${a.platforms.join(' ')}">
     <div class="card-head">${iconImg(a, '', 64)}<h2><a href="apps/${a.id}/index.html">${esc(a.name)}</a>${wip(a)}</h2></div>
     <p>${esc(a.summary)}</p>
-    ${openWeb(a) ? `<div class="card-actions"><a class="btn action open" href="${esc(openWeb(a))}" target="_blank" rel="noopener" aria-label="Open ${esc(a.name)} web app (opens in a new tab)">${openIcon}Open<span class="visually-hidden"> ${esc(a.name)}</span></a></div>` : ''}
     <div class="meta">${badges(a)}<span class="version">${known(a.version) ? 'v' + esc(a.version) : 'Version unknown'}</span></div>
   </li>`).join('\n');
 
@@ -123,6 +122,7 @@ ${FILTERS.map((p) => `    <button type="button" class="chip" data-platform="${p}
   <ul class="grid">
 ${cards}
   </ul>
+  <p class="add-app"><a class="btn" href="/submit/">Request an app</a></p>
 </section>`,
   scripts: `<script src="${asset('', 'js/filter.js')}" defer></script>\n`,
 });

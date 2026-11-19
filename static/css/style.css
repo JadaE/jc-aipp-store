@@ -76,7 +76,6 @@ html{scroll-padding-top:5rem}
 .home-lockup .logo-lockup{width:min(360px,60vw);height:auto}
 @media (max-width:480px){.home-lockup{padding:1.25rem 0 0}.home-lockup .logo-lockup{width:min(220px,62vw)}}
 .skip-link{z-index:30}
-.card-actions{position:relative;z-index:1;display:flex;gap:.75rem}
 .btn.open{background:var(--accent);color:var(--on-accent)}
 .theme-toggle{display:inline-grid;place-items:center;width:40px;height:40px;padding:0;color:var(--muted);background:transparent;border:0;border-radius:50%;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .theme-toggle[hidden]{display:none}
@@ -104,6 +103,7 @@ html{scroll-padding-top:5rem}
 .grid{display:grid;gap:1rem;grid-template-columns:1fr;padding:0;margin:0;list-style:none}
 @media (min-width:38rem){.grid{grid-template-columns:repeat(2,1fr)}}
 @media (min-width:60rem){.grid{grid-template-columns:repeat(3,1fr)}}
+.add-app{margin:1.25rem 0 0}
 .card{position:relative;display:flex;flex-direction:column;gap:.75rem;padding:1.25rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);transition:border-color .2s,transform .2s}
 .card:hover,.card:focus-within{border-color:var(--line-strong);transform:translateY(-2px)}
 .card[hidden]{display:none}
