@@ -61,6 +61,31 @@ downloads) and a build change. Unlisted app URLs never go in this repo.
 ## Release notes
 See `CHANGELOG.md`.
 
+
+## Review submissions (local only)
+A public `/review/` page is not shipped. The here.now owner API
+(`GET https://here.now/api/v1/publishes/<slug>/data/<collection>`) is for agents
+and scripts, not browser pages: it does not allow CORS, and the same-origin
+Site Data routes reject owner-only reads (see
+[Site Data owner API](https://here.now/docs#sitedata-owner-api) and
+[browser API](https://here.now/docs#sitedata-browser-api)).
+
+`npm run review` starts a server on `127.0.0.1` only. It reads the API key from
+`HERENOW_API_KEY` or `~/.aipp-store/config.json` (`{ "apiKey", "slug" }`; the
+gitignored `config.local.json` is a fallback), lists submissions, and records
+approve or reject in `~/.aipp-store/decisions.json`. Approving a submission that
+has a GitHub repo also adds that repo to `~/.aipp-store/approved-apps.json`.
+Those files stay outside the repo. Submitter emails appear only on this local
+page or in the terminal; they are never written to the allowlist, the site, or
+git. Nothing is published.
+
+```bash
+npm run review                              # http://127.0.0.1:8787/ on this computer only
+node tools/review.mjs --list                # list submissions in the terminal
+node tools/review.mjs --decide RECORD_ID approve
+node tools/review.mjs --decide RECORD_ID reject
+```
+
 ## Developer submissions (JC-28)
 `/submit/` is the public submission form. Its fields come from `tools/submission-schema.mjs`, which also generates the
 here.now Site Data manifest `dist/.herenow/data.json`: one `submissions` collection with **public insert only**, owner-only
