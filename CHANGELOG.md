@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.16
+- The footer no longer links to a profile-wide GitHub browse page. Each app's own GitHub links are unchanged.
+- The Open button is gone from home-page cards. It still appears on an app's own page (Galaxy Gridiron).
+
 ## v0.0.15
 - The invite-only /submit/ form now only requires name, email, app name, a short summary, and one link. Everything else is optional, and any https link works for images and downloads.
 
