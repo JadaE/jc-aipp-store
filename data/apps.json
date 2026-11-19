@@ -120,6 +120,16 @@
       ],
       "updates": [
         {
+          "version": "0.0.8",
+          "date": "2026-11-19",
+          "notes": [
+            "First public store build. New Android package name, so it can sit next to an older personal copy. Saved data does not carry over between the two.",
+            "Signed by JC AiPPs. In-app update checks use this repo's public GitHub Releases. Tapping Download opens the release; the app never installs an update by itself.",
+            "Includes the earlier fix so Stats follow the real trash.",
+            "About credits JC AiPPs. Uninstalling the app erases its saved choices."
+          ]
+        },
+        {
           "version": "0.0.6",
           "date": "2026-10-27",
           "notes": [
@@ -151,8 +161,8 @@
         "android"
       ],
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.6",
-      "versionSource": "git tag v0.0.6; android/app/src/version.ts and app.json (expo.version)",
+      "version": "0.0.8",
+      "versionSource": "GitHub Release v0.0.8 in JadaE/swipe-clean",
       "icon": {
         "src": "assets/apps/swipe-clean/icon.webp",
         "alt": "Swipe Clean app icon"
@@ -186,15 +196,16 @@
       "screenshotsNote": "Android app v0.0.6 rendered in a browser preview at phone size, with placeholder images only.",
       "links": {
         "openWeb": null,
-        "download": null,
+        "download": {
+          "url": "https://github.com/JadaE/swipe-clean/releases/download/v0.0.8/SwipeClean-v0.0.8.apk",
+          "label": "Download"
+        },
         "githubRelease": null,
         "ownDownload": null,
         "iosAppStore": null
       },
       "vettedForks": [],
-      "todo": [
-        "No GitHub release with an APK asset yet; only a source download is linked."
-      ]
+      "todo": []
     },
     {
       "id": "kanban-board",
@@ -378,9 +389,16 @@
       ],
       "platformNotes": {},
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.7",
-      "versionSource": "GitHub Release v0.0.7 in JadaE/pantry-chef",
+      "version": "0.0.8",
+      "versionSource": "GitHub Release v0.0.8 in JadaE/pantry-chef",
       "updates": [
+        {
+          "version": "0.0.8",
+          "date": "2026-11-19",
+          "notes": [
+            "Optional daily 'use soon' reminders for items about to expire, plus a receipt wording fix."
+          ]
+        },
         {
           "version": "0.0.7",
           "date": "2026-11-02",
@@ -434,7 +452,7 @@
       "links": {
         "openWeb": null,
         "download": {
-          "url": "https://github.com/JadaE/pantry-chef/releases/download/v0.0.7/PantryChef-v0.0.7.apk",
+          "url": "https://github.com/JadaE/pantry-chef/releases/download/v0.0.8/PantryChef-v0.0.8.apk",
           "label": "Download"
         },
         "githubRelease": null,
