@@ -71,13 +71,16 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="${rel}index.html">${logo(rel)}</a>
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Light mode" title="Light mode" hidden><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></button>
+  <div class="header-actions">
+    <a class="btn header-submit" href="/submit/"${canonicalPath === 'submit/' ? ' aria-current="page"' : ''}>Submit an app</a>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Light mode" title="Light mode" hidden><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></button>
+  </div>
 </div></header>
 <main id="main" class="wrap" tabindex="-1">
 ${body}
 </main>
 <footer class="site-footer"><div class="wrap">
-  <p>${esc(site.footer)}</p>
+  <p>${esc(site.footer)} <a href="/submit/">Submit an app</a>.</p>
   <p class="fineprint">${esc(site.name)} v${esc(site.version)}</p>
   ${site.disclaimer ? `<p class="disclaimer">${esc(site.disclaimer)}</p>` : ''}
 </div></footer>
@@ -122,7 +125,7 @@ ${FILTERS.map((p) => `    <button type="button" class="chip" data-platform="${p}
   <ul class="grid">
 ${cards}
   </ul>
-  <p class="add-app"><a class="btn" href="/submit/">Request an app</a></p>
+  <p class="add-app"><a class="btn" href="/submit/">Submit an app</a></p>
 </section>`,
   scripts: `<script src="${asset('', 'js/filter.js')}" defer></script>\n`,
 });
@@ -262,7 +265,7 @@ fs.writeFileSync(path.join(out, 'submit', 'index.html'), submitPage());
 // here.now Site Data manifest (owner-only read). Applied only when Review & Release publishes this build.
 fs.mkdirSync(path.join(out, '.herenow'), { recursive: true });
 fs.writeFileSync(path.join(out, '.herenow', 'data.json'), JSON.stringify(siteDataManifest(), null, 2) + '\n');
-const urls = ['', ...apps.map((a) => `apps/${a.id}/`)]; // /submit/ is invite only: not in the sitemap or footer
+const urls = ['', ...apps.map((a) => `apps/${a.id}/`)]; // /submit/ is invite only: not in the sitemap
 fs.writeFileSync(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${esc(`${base}/${u}`)}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
 console.log(`built ${apps.length} app pages -> ${path.relative(process.cwd(), out) || out} (site URL from ${siteUrlSource})`);

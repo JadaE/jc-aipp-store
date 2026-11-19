@@ -3,6 +3,10 @@
 ## Unreleased
 - Local-only submission review tool (`npm run review`). It is not part of the published site, so there is no store version bump.
 
+## v0.0.17
+- "Request an app" on the home page is now "Submit an app".
+- Every page has a "Submit an app" button in the header (next to the theme toggle) and a "Submit an app" link in the footer. All three go to the invite-only /submit/ form, which stays off the sitemap and noindex.
+
 ## v0.0.16
 - The footer no longer links to a profile-wide GitHub browse page. Each app's own GitHub links are unchanged.
 - The Open button is gone from home-page cards. It still appears on an app's own page (Galaxy Gridiron).

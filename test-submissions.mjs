@@ -71,18 +71,23 @@ const html = fs.existsSync(formFile) ? fs.readFileSync(formFile, 'utf8') : '';
   const pages = ['index.html', ...fs.readdirSync(path.join(dist, 'apps')).map((a) => `apps/${a}/index.html`), 'submit/index.html'];
   const STRIP_CANON = /<link rel="canonical"[^>]*>|<meta property="og:url"[^>]*>/g;
   const FORM_HREF = /(?:^|\/)submit\/?(?:index\.html)?$/;
-  const ALLOWED_SUBMIT_LINK = '<a class="btn" href="/submit/">Request an app</a>';
+  const HEADER_SUBMIT = '<a class="btn header-submit" href="/submit/">Submit an app</a>';
+  const HEADER_SUBMIT_HERE = '<a class="btn header-submit" href="/submit/" aria-current="page">Submit an app</a>';
+  const FOOTER_SUBMIT = '<a href="/submit/">Submit an app</a>';
+  const HOME_SUBMIT = '<a class="btn" href="/submit/">Submit an app</a>';
   const formAnchors = (html) => [...html.replace(STRIP_CANON, '').matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)]
     .map((m) => m[0])
     .filter((a) => FORM_HREF.test(((a.match(/\bhref="([^"]*)"/) || [])[1] || '').split(/[?#]/)[0]) || /Submit an app|Request an app/.test(a));
+  const expectedLinks = (p) => p === 'index.html' ? [HEADER_SUBMIT, HOME_SUBMIT, FOOTER_SUBMIT]
+    : p === 'submit/index.html' ? [HEADER_SUBMIT_HERE, FOOTER_SUBMIT]
+    : [HEADER_SUBMIT, FOOTER_SUBMIT];
   let formLinkOk = true;
   for (const p of pages) {
     const links = formAnchors(fs.readFileSync(path.join(dist, p), 'utf8'));
-    if (p === 'index.html') {
-      if (links.length !== 1 || links[0] !== ALLOWED_SUBMIT_LINK) { fail(`index.html: expected exactly the Request an app button linking to /submit/, got ${JSON.stringify(links)}`); formLinkOk = false; }
-    } else if (links.length) { fail(`${p}: form should only be linked from the home Request an app button (found ${JSON.stringify(links)})`); formLinkOk = false; }
+    const want = expectedLinks(p);
+    if (links.length !== want.length || links.some((a, i) => a !== want[i])) { fail(`${p}: form should be linked only from the header button, the footer link and the home button (all /submit/), got ${JSON.stringify(links)}`); formLinkOk = false; }
   }
-  expect(formLinkOk, 'form is linked only from the home Request an app button');
+  expect(formLinkOk, 'form is linked only from the header button, the footer link and the home button (all /submit/)');
   expect(!fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8').includes('/submit/'), 'form is not in the sitemap');
   expect(/<meta name="robots" content="noindex">/.test(html), 'form page is noindex');
   expect(/okay first/i.test(html), 'form says apps need the store owner\'s okay first');
