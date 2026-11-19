@@ -257,8 +257,9 @@ for (const f of htmlFiles) {
       continue;
     }
     internal++;
-    let target = path.resolve(path.dirname(f), url.split(/[?#]/)[0]);
-    if (url.endsWith('/')) target = path.join(target, 'index.html');
+    const rawPath = url.split(/[?#]/)[0];
+    let target = rawPath.startsWith('/') ? path.join(dist, rawPath.slice(1)) : path.resolve(path.dirname(f), rawPath);
+    if (rawPath.endsWith('/')) target = path.join(target, 'index.html');
     if (!fs.existsSync(target)) fail(`${path.relative(dist, f)}: broken link ${url}`);
   }
   if (/<img(?![^>]*\balt=)[^>]*>/.test(html)) fail(`${path.relative(dist, f)}: <img> without alt`);
