@@ -7,7 +7,9 @@
     "test": "node build.mjs && node test.mjs && node test-submissions.mjs",
     "previews": "node build.mjs && node tools/previews.mjs",
     "batch:dry": "node tools/submissions-batch.mjs --dry-run",
-    "review": "node tools/review.mjs"
+    "review": "node tools/review.mjs",
+    "publish:data-only": "bash scripts/publish-data-only.sh",
+    "test:publish-data-only": "bash test-publish-data-only.sh"
   },
   "devDependencies": {
     "axe-core": "^4.14.0",

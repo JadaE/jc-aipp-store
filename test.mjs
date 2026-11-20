@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execSync, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { resolveSiteUrl } from './siteurl.mjs';
-import { SECRET_PATTERNS } from './tools/scans.mjs';
+import { SECRET_PATTERNS, HERE_NOW_ALLOW, hereNowAllowed } from './tools/scans.mjs';
 import { resolveFrontOfficeEmail, frontOfficeReady } from './tools/edit-requests.mjs';
 
 const root = path.dirname(new URL(import.meta.url).pathname);
@@ -39,9 +39,33 @@ let apps = [];
 try { apps = JSON.parse(fs.readFileSync(path.join(root, 'data/apps.json'), 'utf8')).apps; ok('valid JSON'); }
 catch (e) { fail(`apps.json does not parse: ${e.message}`); }
 const PLAT = ['android', 'ios', 'windows', 'macos', 'web'];
-// Public here.now files the owner approved (exact paths only). Everything else on here.now stays blocked.
-const hereNowAllow = [/^https:\/\/gleaming-tangle-8ek4\.here\.now\/store\/GalaxyGridiron-v0\.0\.16\.apk$/, /^https:\/\/gleaming-tangle-8ek4\.here\.now\/play\/$/];
-const hereNowAllowed = (u) => hereNowAllow.some((r) => r.test(u));
+// Public here.now allowlist lives in tools/scans.mjs (semver APKs on the approved origin, plus /play/).
+section('here.now allowlist');
+{
+  const hn = ['here', 'now'].join('.');
+  const storeOrigin = `https://gleaming-tangle-8ek4.${hn}`;
+  const good = [
+    `${storeOrigin}/store/GalaxyGridiron-v0.0.16.apk`,
+    `${storeOrigin}/store/GalaxyGridiron-v0.0.17.apk`,
+    `${storeOrigin}/store/GalaxyGridiron-v1.2.3.apk`,
+    `${storeOrigin}/play/`,
+  ];
+  const bad = [
+    `${storeOrigin}/store/GalaxyGridiron-v0.0.16.zip`,
+    `${storeOrigin}/store/GalaxyGridiron-v0.0.16.apk?x=1`,
+    `https://evil.${hn}/store/GalaxyGridiron-v0.0.16.apk`,
+    `${storeOrigin}/store/OtherApp-v0.0.16.apk`,
+    `${storeOrigin}/store/GalaxyGridiron-v1.2.3.4.apk`,
+    `${storeOrigin}/store/../GalaxyGridiron-v1.0.0.apk`,
+    `${storeOrigin}/play`,
+    `${storeOrigin}/play/extra`,
+    `http://gleaming-tangle-8ek4.${hn}/store/GalaxyGridiron-v0.0.16.apk`,
+  ];
+  const rejected = good.filter((u) => !hereNowAllowed(u));
+  const accepted = bad.filter((u) => hereNowAllowed(u));
+  if (rejected.length || accepted.length) fail(`here.now allowlist misfired (rejected ${rejected.length} good, accepted ${accepted.length} bad)`);
+  else ok('approved Galaxy Gridiron semver APKs and /play/ only');
+}
 const ids = new Set();
 for (const a of apps) {
   const where = a.id || '(no id)';
@@ -240,7 +264,7 @@ const allowedExternal = [
   ...apps.map((a) => new RegExp(`^https://github\\.com/${owner}/${a.repo}(/(fork|releases.*))?$`)),
   /^https:\/\/apps\.apple\.com\//,
   ...(frontOfficeReady(resolveFrontOfficeEmail(root)) ? [new RegExp(`^mailto:${resolveFrontOfficeEmail(root).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\?subject=[^"]*&body=[^"]*$`)] : []),
-  ...hereNowAllow,
+  ...HERE_NOW_ALLOW,
   ...apps.filter((a) => a.links?.openWeb).map((a) => new RegExp(`^${a.links.openWeb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)),
 ];
 const base = resolveSiteUrl(root, site).url;

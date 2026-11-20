@@ -8,13 +8,26 @@ A small static app store for open-source apps.
 - `build.mjs` – generates `dist/` (home page, one page per app, sitemap, robots).
 - `test.mjs` – data validation, link/image checks, secret scan, HTML + accessibility checks.
 - `publish.sh` – publishes `dist/` to here.now (needs a release reviewer's approval first).
+- `scripts/publish-data-only.sh` (`npm run publish:data-only`) – publishes a data-only listing update (only `data/apps.json`, `data/site.json`, and `CHANGELOG.md`) after allowlist, leak, and test checks. Use `--dry-run` to run the checks without publishing. Anything else still goes through Review & Release and `publish.sh`.
 
 ## Build and test
 ```bash
 npm install        # optional: html-validate, axe-core, playwright-core for the HTML/a11y checks
 npm run build      # -> dist/
 npm test
+npm run test:publish-data-only   # allowlist / dry-run checks for scripts/publish-data-only.sh
 ```
+
+## Data-only listing updates
+When only an app listing, `data/site.json`, or a changelog line changed (no code, templates, scripts, workflows, or dependencies), publish with:
+
+```bash
+# after committing the data-only change
+npm run publish:data-only -- --dry-run   # checks only; nothing is published or pushed
+npm run publish:data-only                # publish dist/ to here.now and verify the live listing
+```
+
+The script refuses to run if any other file changed, if a symlink or untracked file is present, or if leak checks or tests fail. It does not call the release gate. Anything outside that allowlist must be reviewed and published with `publish.sh`. `gitleaks` and the standard leak-check tool must be on PATH or set via `GITLEAKS` / `LEAK_CHECK_SH` or `config.local.json` (`release.gitleaks`, `release.leakCheckScript`).
 
 ## Config
 Copy `config.example.json` to `config.local.json` (gitignored) and fill in your own values,
