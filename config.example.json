@@ -8,7 +8,9 @@
     "siteUrl": "OPTIONAL: https://YOUR-SITE-SLUG.example (defaults to the here.now slug URL)"
   },
   "release": {
-    "gateScript": "/path/to/release-gate.sh (or set RELEASE_GATE_SH in the environment)"
+    "gateScript": "/path/to/release-gate.sh (or set RELEASE_GATE_SH in the environment)",
+    "gitleaks": "OPTIONAL: path to the gitleaks binary (or set GITLEAKS). If unset, gitleaks must be on PATH.",
+    "leakCheckScript": "OPTIONAL: path to the standard leak-check script (or set LEAK_CHECK_SH)."
   },
   "submissions": {
     "approver": "store-owner",

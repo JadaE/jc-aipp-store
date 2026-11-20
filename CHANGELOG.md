@@ -2,6 +2,9 @@
 
 ## Unreleased
 - Local-only submission review tool (`npm run review`). It is not part of the published site, so there is no store version bump.
+- Data-only listing updates can be published with `npm run publish:data-only` (or `scripts/publish-data-only.sh`) after a narrow allowlist, leak, and test check. This path does not use the release gate. Code, templates, scripts, workflows, or dependency changes still need review and `publish.sh`. No store version bump (tooling only).
+- Tests accept any x.y.z Galaxy Gridiron APK on the already-approved store origin, so a listing version bump can stay data-only.
+
 
 ## v0.0.18
 - The "Submit an app" button under the app list on the home page is gone. The header button (next to the theme toggle) and the footer link are unchanged; both still go to /submit/.

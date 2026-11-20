@@ -13,6 +13,14 @@ export const SECRET_PATTERNS = [
   [/HERENOW_API_KEY\s*=\s*["']?[A-Za-z0-9]{12,}/, 'hardcoded HERENOW_API_KEY'],
 ];
 
+// Public here.now files the owner approved. Galaxy Gridiron APKs may use any
+// strict x.y.z semver on this exact store origin; everything else on here.now stays blocked.
+export const HERE_NOW_ALLOW = [
+  /^https:\/\/gleaming-tangle-8ek4\.here\.now\/store\/GalaxyGridiron-v\d+\.\d+\.\d+\.apk$/,
+  /^https:\/\/gleaming-tangle-8ek4\.here\.now\/play\/$/,
+];
+export const hereNowAllowed = (u) => HERE_NOW_ALLOW.some((r) => r.test(String(u || '')));
+
 // Extra checks for submitted text (not applied to the store's own files).
 export const SUBMISSION_SECRET_PATTERNS = [
   [/\bxox[abpsr]-[A-Za-z0-9-]{10,}/, 'Slack token'],
