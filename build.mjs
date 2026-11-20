@@ -125,7 +125,6 @@ ${FILTERS.map((p) => `    <button type="button" class="chip" data-platform="${p}
   <ul class="grid">
 ${cards}
   </ul>
-  <p class="add-app"><a class="btn" href="/submit/">Submit an app</a></p>
 </section>`,
   scripts: `<script src="${asset('', 'js/filter.js')}" defer></script>\n`,
 });
