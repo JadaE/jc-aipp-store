@@ -14,6 +14,17 @@
       ],
       "updates": [
         {
+          "version": "0.0.16",
+          "date": "2026-11-19",
+          "notes": [
+            "Trade chips come back after a reinstall when you sign in with the same password.",
+            "Trade suggestions are more realistic, you can pick a player to see trades involving them, and trades grey out after your league's Sleeper deadline with a warning when it is coming up.",
+            "Also includes the v0.0.15 Home Screen hint, easier username entry, Make this week's picks, and more reliable pick sync.",
+            "In-app feedback stays off.",
+            "AI chat works the same as in the current live app."
+          ]
+        },
+        {
           "version": "0.0.13",
           "date": "2026-11-04",
           "notes": [
@@ -53,8 +64,8 @@
         "web": "On iPhone, open it in Safari and add it to your Home Screen."
       },
       "builtWith": "Grok Bot from Cursor",
-      "version": "0.0.14",
-      "versionSource": "git tag v0.0.14 (no public release notes for v0.0.14 yet)",
+      "version": "0.0.16",
+      "versionSource": "public store version.json (v0.0.16); no GitHub release or git tag yet",
       "icon": {
         "src": "assets/apps/galaxy-gridiron/icon.webp",
         "alt": "Galaxy Gridiron app icon"
@@ -95,7 +106,7 @@
       "links": {
         "openWeb": "https://gleaming-tangle-8ek4.here.now/play/",
         "download": {
-          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.14.apk",
+          "url": "https://gleaming-tangle-8ek4.here.now/store/GalaxyGridiron-v0.0.16.apk",
           "label": "Download"
         },
         "githubRelease": null,
