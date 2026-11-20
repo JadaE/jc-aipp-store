@@ -3,6 +3,9 @@
 ## Unreleased
 - Local-only submission review tool (`npm run review`). It is not part of the published site, so there is no store version bump.
 
+## v0.0.18
+- The "Submit an app" button under the app list on the home page is gone. The header button (next to the theme toggle) and the footer link are unchanged; both still go to /submit/.
+
 ## v0.0.17
 - "Request an app" on the home page is now "Submit an app".
 - Every page has a "Submit an app" button in the header (next to the theme toggle) and a "Submit an app" link in the footer. All three go to the invite-only /submit/ form, which stays off the sitemap and noindex.

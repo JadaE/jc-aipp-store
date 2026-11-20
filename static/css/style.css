@@ -110,7 +110,6 @@ html{scroll-padding-top:5rem}
 .grid{display:grid;gap:1rem;grid-template-columns:1fr;padding:0;margin:0;list-style:none}
 @media (min-width:38rem){.grid{grid-template-columns:repeat(2,1fr)}}
 @media (min-width:60rem){.grid{grid-template-columns:repeat(3,1fr)}}
-.add-app{margin:1.25rem 0 0}
 .card{position:relative;display:flex;flex-direction:column;gap:.75rem;padding:1.25rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);transition:border-color .2s,transform .2s}
 .card:hover,.card:focus-within{border-color:var(--line-strong);transform:translateY(-2px)}
 .card[hidden]{display:none}
